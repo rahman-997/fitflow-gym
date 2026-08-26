@@ -1,10 +1,12 @@
 # FitFlow Fitness
 
+[![CI](https://github.com/rahman-997/fitflow-gym/actions/workflows/ci.yml/badge.svg)](https://github.com/rahman-997/fitflow-gym/actions/workflows/ci.yml)
+
 ![FitFlow Fitness social preview](public/og.png)
 
 A polished, responsive fitness experience that helps users discover programs, generate a personalized training recommendation, run guided workout intervals, and track weekly progress.
 
-[Live demo](https://fitflow-gym-online.netlify.app) · [Portfolio](https://abdulrahman-hajjar-dev.netlify.app) · [LinkedIn](https://www.linkedin.com/in/abdulrahman-hajjar-5430281a1/) · [Developer profile](https://github.com/rahman-997)
+**[Live demo](https://fitflow-gym-online.netlify.app)** · **[Case study](https://abdulrahman-hajjar-dev.netlify.app/work/fitflow/)** · [Portfolio](https://abdulrahman-hajjar-dev.netlify.app) · [LinkedIn](https://www.linkedin.com/in/abdulrahman-hajjar-5430281a1/) · [Developer profile](https://github.com/rahman-997)
 
 ## Highlights
 
