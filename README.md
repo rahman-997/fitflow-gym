@@ -83,7 +83,7 @@ The visual system combines deep forest tones, editorial serif headlines, energet
 
 ## Author
 
-Designed and developed by [Abdulrahman Hajjar](https://abdulrahman-hajjar-dev.netlify.app), Frontend Engineer based in Istanbul, Türkiye.
+Designed and developed by [Abdulrahman Hajar](https://abdulrahman-hajjar-dev.netlify.app), Software Engineer and Full-Stack Developer based in Istanbul, Türkiye.
 
 ## License
 
