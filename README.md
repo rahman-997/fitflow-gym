@@ -4,7 +4,7 @@
 
 A polished, responsive fitness experience that helps users discover programs, generate a personalized training recommendation, run guided workout intervals, and track weekly progress.
 
-[Live demo](https://fitflow-gym-online.netlify.app) · [LinkedIn](https://www.linkedin.com/in/abdulrahman-hajjar-5430281a1) · [Developer profile](https://github.com/rahman-997)
+[Live demo](https://fitflow-gym-online.netlify.app) · [Portfolio](https://abdulrahman-hajjar-dev.netlify.app) · [LinkedIn](https://www.linkedin.com/in/abdulrahman-hajjar-5430281a1/) · [Developer profile](https://github.com/rahman-997)
 
 ## Highlights
 
@@ -81,7 +81,7 @@ The visual system combines deep forest tones, editorial serif headlines, energet
 
 ## Author
 
-Designed and developed by [Abdulrahman Hajar](https://www.linkedin.com/in/abdulrahman-hajjar-5430281a1).
+Designed and developed by [Abdulrahman Hajjar](https://abdulrahman-hajjar-dev.netlify.app), Frontend Engineer based in Istanbul, Türkiye.
 
 ## License
 
