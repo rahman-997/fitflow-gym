@@ -189,7 +189,7 @@ export default function Home() {
   const [timerPresetIndex, setTimerPresetIndex] = useState(0);
   const [timerPhase, setTimerPhase] = useState<"work" | "rest" | "done">("work");
   const [timerRound, setTimerRound] = useState(1);
-  const [timerSeconds, setTimerSeconds] = useState(timerPresets[0].work);
+  const [timerSeconds, setTimerSeconds] = useState<number>(timerPresets[0].work);
   const [timerRunning, setTimerRunning] = useState(false);
 
   const closeMenu = () => setMenuOpen(false);
