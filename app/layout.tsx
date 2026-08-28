@@ -1,33 +1,32 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import "./claims-cleanup.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://fitflow-gym-online.netlify.app"),
-  title: "FitFlow Fitness — Personalized Training",
+  title: "FitFlow — Local-First Fitness PWA",
   description:
-    "Personalized workouts, expert guidance, and a clear path to a stronger, healthier you.",
+    "A local-first fitness PWA with program discovery, plan recommendations, guided interval training, weekly progress tracking, accessibility, and offline-ready behavior.",
   authors: [{ name: "Abdulrahman Hajar", url: "https://www.linkedin.com/in/abdulrahman-hajjar-5430281a1" }],
   creator: "Abdulrahman Hajar",
-  keywords: ["fitness", "workout planner", "training programs", "weekly progress", "FitFlow"],
+  keywords: ["fitness PWA", "workout planner", "interval timer", "local-first", "accessibility", "FitFlow"],
   alternates: { canonical: "/" },
   openGraph: {
-    title: "FitFlow Fitness",
-    description: "Move with purpose. Build strength. Thrive for life.",
+    title: "FitFlow — Local-First Fitness PWA",
+    description: "Plan a training week, run guided intervals, and keep progress on-device in an installable fitness experience.",
     type: "website",
     images: [
       {
         url: "/og.png",
         width: 1731,
         height: 909,
-        alt: "FitFlow Fitness - Move with purpose, build strength, thrive for life",
+        alt: "FitFlow local-first fitness PWA product preview",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "FitFlow Fitness",
-    description: "Move with purpose. Build strength. Thrive for life.",
+    title: "FitFlow — Local-First Fitness PWA",
+    description: "Plan a training week, run guided intervals, and keep progress on-device.",
     images: ["/og.png"],
   },
   icons: {
