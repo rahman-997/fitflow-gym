@@ -6,7 +6,7 @@
 
 **A product-focused fitness PWA built with Next.js, React, and TypeScript.** FitFlow turns a simple fitness landing page into an interactive training product: users can discover programs, generate a recommendation, run guided intervals, track a training week, and install the experience on supported devices.
 
-**Live:** [fitflow-gym-online.netlify.app](https://fitflow-gym-online.netlify.app) · **Case study:** [Portfolio](https://abdulrahman-hajjar-dev.netlify.app/work/fitflow/) · **Engineer:** [Abdulrahman Hajar](https://github.com/rahman-997)
+**Live:** [fitflow-gym-online.netlify.app](https://fitflow-gym-online.netlify.app) · **Case study:** [Portfolio](https://abdulrahman-hajar-dev.netlify.app/work/fitflow/) · **Engineer:** [Abdulrahman Hajar](https://github.com/rahman-997)
 
 ---
 
