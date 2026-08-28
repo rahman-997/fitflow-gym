@@ -38,8 +38,11 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Production build
+      - name: Production static build
         run: npm run build
+
+      - name: Verify static export
+        run: node scripts/verify-static-export.mjs
 
       - name: Dependency audit
         run: npm run audit
