@@ -10,12 +10,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: fitflow-ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: fitflow-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   quality:
-    name: Test and build
+    name: Quality gate
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -32,5 +32,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run project checks
-        run: npm test
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Production build
+        run: npm run build
+
+      - name: Dependency audit
+        run: npm run audit
