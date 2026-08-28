@@ -4,7 +4,7 @@
 
 ![FitFlow product preview](public/og.png)
 
-**A product-focused fitness PWA built with Next.js, React, and TypeScript.** FitFlow turns a simple fitness landing page into an interactive training product: users can discover programs, generate a recommendation, run guided intervals, track a training week, and install the experience on supported devices.
+**A product-focused fitness PWA built with Next.js, React, and TypeScript.** FitFlow turns a fitness concept into an interactive training product: users can discover programs, generate a recommendation, run guided intervals, track a training week, and install the experience on supported devices.
 
 **Live:** [fitflow-gym-online.netlify.app](https://fitflow-gym-online.netlify.app) · **Case study:** [Portfolio](https://abdulrahman-hajar-dev.netlify.app/work/fitflow/) · **Engineer:** [Abdulrahman Hajar](https://github.com/rahman-997)
 
@@ -14,12 +14,12 @@
 
 | Area | Implementation |
 | --- | --- |
-| Product | Personalized training recommendation, programs, weekly progress, guided intervals |
+| Product | Training recommendation, program filtering, weekly progress, guided intervals |
 | Frontend | Next.js 16, React 19, TypeScript 5 |
 | State | Device-local progress using browser storage |
 | PWA | Web App Manifest, service worker, installable/offline-ready core |
 | UX | Responsive layouts, keyboard focus, reduced motion, semantic landmarks |
-| Quality | ESLint, project checks, production build validation, GitHub Actions CI |
+| Quality | ESLint, production build validation, GitHub Actions CI |
 
 ## Why this project exists
 
@@ -30,7 +30,7 @@ Discover a program
       ↓
 Generate a recommendation
       ↓
-Run a guided session
+Run a guided interval
       ↓
 Track the training week
       ↓
@@ -48,7 +48,7 @@ That flow creates real application state, persistence, timing behavior, accessib
 - Progress percentage, completion state, and weekly reset
 - Installable Progressive Web App behavior
 - Offline-ready core shell and assets
-- Coach profiles, member journeys, and accessible FAQ interactions
+- Accessible FAQ and interactive controls
 - Responsive navigation and layouts across mobile, tablet, and desktop
 - Open Graph metadata and branded social preview
 
@@ -114,7 +114,7 @@ npm test
 npm run build
 ```
 
-The repository also includes GitHub Actions CI so code-quality and production-build checks are repeatable outside a developer machine.
+The repository includes GitHub Actions CI so code-quality and production-build checks are repeatable outside a developer machine.
 
 ## Accessibility checklist
 
