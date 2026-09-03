@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://fitflow-gym-online.netlify.app"),
+  metadataBase: new URL("https://fitflow-gym.onrender.com"),
   title: "FitFlow — Local-First Fitness PWA",
   description:
     "A local-first fitness PWA with program discovery, plan recommendations, guided interval training, weekly progress tracking, accessibility, and offline-ready behavior.",
@@ -14,6 +14,7 @@ export const metadata: Metadata = {
     title: "FitFlow — Local-First Fitness PWA",
     description: "Plan a training week, run guided intervals, and keep progress on-device in an installable fitness experience.",
     type: "website",
+    url: "/",
     images: [
       {
         url: "/og.png",
