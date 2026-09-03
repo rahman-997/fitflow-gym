@@ -70,6 +70,9 @@ for (const marker of [
   'request.mode === "navigate"',
   'url.pathname.startsWith("/_next/static/")',
   'key.startsWith(CACHE_PREFIX)',
+  "MAX_RUNTIME_ENTRIES",
+  "trimCache(RUNTIME_CACHE, MAX_RUNTIME_ENTRIES)",
+  'request.headers.has("range")',
   "!response.ok",
   "Response.error()",
 ]) {
