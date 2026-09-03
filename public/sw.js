@@ -2,12 +2,7 @@ const CACHE_PREFIX = "fitflow-";
 const SHELL_CACHE = "fitflow-shell-v3";
 const RUNTIME_CACHE = "fitflow-runtime-v3";
 const ACTIVE_CACHES = new Set([SHELL_CACHE, RUNTIME_CACHE]);
-const CORE_ASSETS = [
-  "/",
-  "/favicon.svg",
-  "/assets/fitflow-hero.png",
-  "/assets/fitflow-programs-grid.png",
-];
+const CORE_ASSETS = ["/", "/favicon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(SHELL_CACHE).then((cache) => cache.addAll(CORE_ASSETS)));
@@ -41,18 +36,13 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (isStaticAssetRequest(request, url)) {
+  if (url.pathname.startsWith("/_next/static/")) {
     event.respondWith(cacheFirstAsset(request));
     return;
   }
 
   event.respondWith(networkFirstRequest(request));
 });
-
-function isStaticAssetRequest(request, url) {
-  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/assets/")) return true;
-  return ["font", "image", "script", "style"].includes(request.destination);
-}
 
 async function networkFirstNavigation(request) {
   try {
