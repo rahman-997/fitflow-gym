@@ -1,5 +1,8 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 
+const canonicalHost = "https://fitflow-gym.onrender.com";
+const legacyHost = "fitflow-gym-online.netlify.app";
+
 const requiredFiles = [
   "out/index.html",
   "out/sw.js",
@@ -22,6 +25,18 @@ for (const marker of ["FitFlow", "manifest.webmanifest"]) {
   if (!html.includes(marker)) {
     throw new Error(`Static export is missing expected marker: ${marker}`);
   }
+}
+
+if (!html.includes(`<link rel="canonical" href="${canonicalHost}/"`)) {
+  throw new Error("FitFlow canonical URL must use the Render production hostname");
+}
+
+if (!html.includes(`${canonicalHost}/og.png`)) {
+  throw new Error("FitFlow social metadata must resolve against the Render production hostname");
+}
+
+if (html.includes(legacyHost)) {
+  throw new Error("Static export still contains the legacy Netlify production hostname");
 }
 
 const manifest = JSON.parse(readFileSync("out/manifest.webmanifest", "utf8"));
@@ -87,4 +102,12 @@ if (!pageSource.includes('navigator.serviceWorker.register("/sw.js")')) {
   throw new Error("FitFlow does not register the exported service worker");
 }
 
-console.log("Static export and PWA cache-safety verification passed.");
+const layoutSource = readFileSync("app/layout.tsx", "utf8");
+if (!layoutSource.includes(`metadataBase: new URL("${canonicalHost}")`)) {
+  throw new Error("FitFlow metadataBase must use the Render production hostname");
+}
+if (layoutSource.includes(legacyHost)) {
+  throw new Error("FitFlow layout still contains the legacy Netlify hostname");
+}
+
+console.log("Static export, canonical Render metadata, and PWA cache-safety verification passed.");
