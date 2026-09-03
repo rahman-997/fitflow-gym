@@ -19,8 +19,8 @@
 | State | Device-local progress using browser storage |
 | PWA | Manifest, service worker, 192×192 + 512×512 PNG install icons, offline-ready core |
 | UX | Responsive layouts, keyboard focus, reduced motion, semantic landmarks |
-| Delivery | Render Static Site from `main` with automatic deployments |
 | Quality | ESLint, TypeScript checks, static-export verification, dependency audit, CI + security scanners |
+| Delivery | Render Static Site from `main` with automatic deploys |
 
 ## Why this project exists
 
@@ -64,10 +64,6 @@ Training progress is intentionally stored on the device. For this product scope 
 
 The app ships a manifest, platform-ready PNG install icons, and a service worker. The cache strategy keeps the app shell useful offline while avoiding HTML fallbacks for failed static assets and keeping public assets refreshable.
 
-### Portable static delivery
-
-FitFlow exports as static assets and is deployed from `main` on Render. The application architecture remains host-portable, while the active production URL and canonical metadata point to Render.
-
 ### Accessibility as a system requirement
 
 Interactive controls include keyboard-visible focus, semantic structure, accessible state, skip navigation, live progress feedback, and reduced-motion support.
@@ -75,6 +71,10 @@ Interactive controls include keyboard-visible focus, semantic structure, accessi
 ### Responsive product UI
 
 The design system uses fluid type, CSS Grid/Flexbox, custom properties, and breakpoint-aware layouts so training flows remain usable across screen sizes instead of simply shrinking desktop components.
+
+### Canonical production delivery
+
+The canonical production URL is `https://fitflow-gym.onrender.com`. Render builds the static export from `main` and automatically deploys new commits, keeping the public demo aligned with the reviewed repository state.
 
 ## Tech stack
 
@@ -87,7 +87,7 @@ Browser localStorage
 Web App Manifest
 Service Worker
 GitHub Actions
-Render
+Render Static Site
 ```
 
 ## Project structure
