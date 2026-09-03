@@ -1,6 +1,7 @@
 const CACHE_PREFIX = "fitflow-";
 const SHELL_CACHE = "fitflow-shell-v3";
 const RUNTIME_CACHE = "fitflow-runtime-v3";
+const MAX_RUNTIME_ENTRIES = 80;
 const ACTIVE_CACHES = new Set([SHELL_CACHE, RUNTIME_CACHE]);
 const CORE_ASSETS = ["/", "/favicon.svg"];
 
@@ -20,13 +21,14 @@ self.addEventListener("activate", (event) => {
             .map((key) => caches.delete(key)),
         ),
       )
+      .then(() => trimCache(RUNTIME_CACHE, MAX_RUNTIME_ENTRIES))
       .then(() => self.clients.claim()),
   );
 });
 
 self.addEventListener("fetch", (event) => {
   const request = event.request;
-  if (request.method !== "GET") return;
+  if (request.method !== "GET" || request.headers.has("range")) return;
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
@@ -77,4 +79,13 @@ async function cacheResponse(cacheName, request, response) {
   if (!response.ok || response.type === "opaque") return;
   const cache = await caches.open(cacheName);
   await cache.put(request, response.clone());
+  if (cacheName === RUNTIME_CACHE) await trimCache(cacheName, MAX_RUNTIME_ENTRIES);
+}
+
+async function trimCache(cacheName, maxEntries) {
+  const cache = await caches.open(cacheName);
+  const keys = await cache.keys();
+  const overflow = keys.length - maxEntries;
+  if (overflow <= 0) return;
+  await Promise.all(keys.slice(0, overflow).map((request) => cache.delete(request)));
 }
