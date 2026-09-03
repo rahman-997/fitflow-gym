@@ -27,7 +27,8 @@ for (const marker of ["FitFlow", "manifest.webmanifest"]) {
   }
 }
 
-if (!html.includes(`<link rel="canonical" href="${canonicalHost}/"`)) {
+const canonicalPattern = /rel=["']canonical["'][^>]*href=["']https:\/\/fitflow-gym\.onrender\.com\/?["']/i;
+if (!canonicalPattern.test(html)) {
   throw new Error("FitFlow canonical URL must use the Render production hostname");
 }
 
