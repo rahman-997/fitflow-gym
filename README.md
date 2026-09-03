@@ -6,7 +6,7 @@
 
 **A product-focused fitness PWA built with Next.js, React, and TypeScript.** FitFlow turns a fitness concept into an interactive training product: users can discover programs, generate a recommendation, run guided intervals, track a training week, and install the experience on supported devices.
 
-**Live:** [fitflow-gym-online.netlify.app](https://fitflow-gym-online.netlify.app) · **Case study:** [Portfolio](https://abdulrahman-hajar-portfolio.onrender.com/work/fitflow/) · **Engineer:** [Abdulrahman Hajar](https://github.com/rahman-997)
+**Live:** [fitflow-gym.onrender.com](https://fitflow-gym.onrender.com) · **Case study:** [Portfolio](https://abdulrahman-hajar-portfolio.onrender.com/work/fitflow/) · **Engineer:** [Abdulrahman Hajar](https://github.com/rahman-997)
 
 ---
 
@@ -19,6 +19,7 @@
 | State | Device-local progress using browser storage |
 | PWA | Manifest, service worker, 192×192 + 512×512 PNG install icons, offline-ready core |
 | UX | Responsive layouts, keyboard focus, reduced motion, semantic landmarks |
+| Delivery | Render Static Site from `main` with automatic deployments |
 | Quality | ESLint, TypeScript checks, static-export verification, dependency audit, CI + security scanners |
 
 ## Why this project exists
@@ -63,6 +64,10 @@ Training progress is intentionally stored on the device. For this product scope 
 
 The app ships a manifest, platform-ready PNG install icons, and a service worker. The cache strategy keeps the app shell useful offline while avoiding HTML fallbacks for failed static assets and keeping public assets refreshable.
 
+### Portable static delivery
+
+FitFlow exports as static assets and is deployed from `main` on Render. The application architecture remains host-portable, while the active production URL and canonical metadata point to Render.
+
 ### Accessibility as a system requirement
 
 Interactive controls include keyboard-visible focus, semantic structure, accessible state, skip navigation, live progress feedback, and reduced-motion support.
@@ -82,6 +87,7 @@ Browser localStorage
 Web App Manifest
 Service Worker
 GitHub Actions
+Render
 ```
 
 ## Project structure
