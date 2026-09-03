@@ -17,9 +17,9 @@
 | Product | Training recommendation, program filtering, weekly progress, guided intervals |
 | Frontend | Next.js 16, React 19, TypeScript 5 |
 | State | Device-local progress using browser storage |
-| PWA | Web App Manifest, service worker, installable/offline-ready core |
+| PWA | Manifest, service worker, 192×192 + 512×512 PNG install icons, offline-ready core |
 | UX | Responsive layouts, keyboard focus, reduced motion, semantic landmarks |
-| Quality | ESLint, production build validation, GitHub Actions CI |
+| Quality | ESLint, TypeScript checks, static-export verification, dependency audit, CI + security scanners |
 
 ## Why this project exists
 
@@ -47,6 +47,7 @@ That flow creates real application state, persistence, timing behavior, accessib
 - Weekly workout tracker with device-local persistence
 - Progress percentage, completion state, and weekly reset
 - Installable Progressive Web App behavior
+- 192×192 and 512×512 PNG install icons plus SVG favicon
 - Offline-ready core shell and assets
 - Accessible FAQ and interactive controls
 - Responsive navigation and layouts across mobile, tablet, and desktop
@@ -60,7 +61,7 @@ Training progress is intentionally stored on the device. For this product scope 
 
 ### Progressive Web App behavior
 
-The app ships a manifest and service worker so the product can be installed and retain a useful core experience when connectivity is limited. PWA support is treated as product behavior, not only a Lighthouse checkbox.
+The app ships a manifest, platform-ready PNG install icons, and a service worker. The cache strategy keeps the app shell useful offline while avoiding HTML fallbacks for failed static assets and keeping public assets refreshable.
 
 ### Accessibility as a system requirement
 
@@ -92,9 +93,14 @@ app/
   globals.css      responsive design system
 public/
   assets/          local product imagery
+  icon-192.png     PWA install icon
+  icon-512.png     PWA install icon
+  favicon.svg      scalable favicon
   og.png           social sharing card
-  sw.js            offline asset strategy
+  sw.js            offline/cache strategy
   manifest.webmanifest
+scripts/
+  verify-static-export.mjs
 ```
 
 ## Run locally
@@ -110,11 +116,13 @@ npm run dev
 
 ```bash
 npm run lint
-npm test
+npm run typecheck
 npm run build
+node scripts/verify-static-export.mjs
+npm run audit
 ```
 
-The repository includes GitHub Actions CI so code-quality and production-build checks are repeatable outside a developer machine.
+GitHub Actions repeats the quality gate and security scans so the repository evidence matches the exported PWA implementation.
 
 ## Accessibility checklist
 
