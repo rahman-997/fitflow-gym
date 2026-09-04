@@ -49,8 +49,8 @@ jobs:
 
       - name: Dependency audit
         run: |
-          npm run audit || {
-            echo "Initial dependency audit failed; retrying once in case the npm registry is transiently unavailable."
+          timeout 120s npm run audit || {
+            echo "Initial dependency audit failed or timed out; retrying once in case the npm registry is transiently unavailable."
             sleep 20
-            npm run audit
+            timeout 120s npm run audit
           }
