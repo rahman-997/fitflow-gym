@@ -23,14 +23,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Use Node.js 22
+      - name: Use pinned Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 22
+          node-version-file: .node-version
           cache: npm
 
+      - name: Use npm 11.19.1
+        run: npm install --global npm@11.19.1
+
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --no-audit --no-fund
 
       - name: Lint
         run: npm run lint
@@ -45,4 +48,21 @@ jobs:
         run: node scripts/verify-static-export.mjs
 
       - name: Dependency audit
-        run: npm run audit
+        shell: bash
+        run: |
+          set +e
+          audit_output="$(timeout 120s npm run audit 2>&1)"
+          audit_status=$?
+          set -e
+          printf '%s\n' "$audit_output"
+
+          if [ "$audit_status" -eq 0 ]; then
+            exit 0
+          fi
+
+          if [ "$audit_status" -eq 124 ] || printf '%s\n' "$audit_output" | grep -Eq 'Service Unavailable|audit endpoint returned an error|ECONNRESET|ETIMEDOUT|EAI_AGAIN'; then
+            echo '::warning::npm audit service is temporarily unavailable; CodeQL, Semgrep and Dependabot remain active, so CI will not fail on this external outage.'
+            exit 0
+          fi
+
+          exit "$audit_status"
