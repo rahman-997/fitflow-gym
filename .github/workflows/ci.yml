@@ -48,4 +48,9 @@ jobs:
         run: node scripts/verify-static-export.mjs
 
       - name: Dependency audit
-        run: npm run audit
+        run: |
+          npm run audit || {
+            echo "Initial dependency audit failed; retrying once in case the npm registry is transiently unavailable."
+            sleep 20
+            npm run audit
+          }
