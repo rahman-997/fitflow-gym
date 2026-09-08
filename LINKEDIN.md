@@ -8,7 +8,9 @@ FitFlow Fitness — Interactive Training Experience
 
 Designed and developed a responsive fitness web experience that helps users explore training programs, generate a personalized workout recommendation, run guided workout intervals, and track weekly session progress. Built with Next.js, React, TypeScript, modern CSS, accessible interactions, PWA capabilities, and device-local persistence.
 
-Live demo: https://fitflow-gym-online.netlify.app
+Live demo: https://fitflow-gym.onrender.com
+
+Case study: https://abdulrahman-hajar-portfolio.onrender.com/work/fitflow/
 
 ## Ready-to-publish post
 
@@ -27,9 +29,11 @@ The goal was to go beyond a traditional landing page and create a product users 
 
 Built with **Next.js, React, TypeScript, and modern CSS**.
 
-Live project: https://fitflow-gym-online.netlify.app
+Live project: https://fitflow-gym.onrender.com
 
 Source code: https://github.com/rahman-997/fitflow-gym
+
+Case study: https://abdulrahman-hajar-portfolio.onrender.com/work/fitflow/
 
 #Nextjs #React #TypeScript #WebDevelopment #FrontendDevelopment #ResponsiveDesign #UXDesign #PortfolioProject
 
@@ -41,9 +45,11 @@ Source code: https://github.com/rahman-997/fitflow-gym
 
 التقنيات: **Next.js، React، TypeScript، وCSS حديث**.
 
-المشروع الحي: https://fitflow-gym-online.netlify.app
+المشروع الحي: https://fitflow-gym.onrender.com
 
 الكود: https://github.com/rahman-997/fitflow-gym
+
+دراسة الحالة: https://abdulrahman-hajar-portfolio.onrender.com/work/fitflow/
 
 ## Skills to add
 
