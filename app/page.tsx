@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { buildKivyroTransfer } from "../lib/transfer";
 
 const features = [
   {
@@ -186,6 +187,7 @@ export default function Home() {
   const [planReady, setPlanReady] = useState(false);
   const [completedSessions, setCompletedSessions] = useState<string[]>([]);
   const [trackerReady, setTrackerReady] = useState(false);
+  const [exportNotice, setExportNotice] = useState("");
   const [timerPresetIndex, setTimerPresetIndex] = useState(0);
   const [timerPhase, setTimerPhase] = useState<"work" | "rest" | "done">("work");
   const [timerRound, setTimerRound] = useState(1);
@@ -254,6 +256,30 @@ export default function Home() {
       navigator.serviceWorker.register("/sw.js").catch(() => undefined);
     }
   }, []);
+
+  const exportToKivyro = () => {
+    let url: string | null = null;
+    try {
+      const transfer = buildKivyroTransfer({
+        plan: { goal: planGoal, days: planDays },
+        completed: completedSessions,
+        sessions: weeklySessions,
+        exportedAt: new Date(),
+      });
+      url = URL.createObjectURL(new Blob([JSON.stringify(transfer, null, 2)], { type: "application/json" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `fitflow-kivyro-${transfer.week}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setExportNotice("FitFlow progress exported. Your original data remains on this device.");
+    } catch {
+      setExportNotice("Could not export progress in this browser. Your saved data was not changed.");
+    } finally {
+      if (url) window.setTimeout(() => URL.revokeObjectURL(url!), 1000);
+    }
+  };
 
   const persistSessions = (sessions: string[]) => {
     try {
@@ -579,7 +605,11 @@ export default function Home() {
               <div className="week-progress" aria-live="polite">
                 <div><span>{completedSessions.length} of {weeklySessions.length} complete</span><strong>{weeklyProgress}%</strong></div>
                 <div className="progress-track" aria-hidden="true"><span style={{ width: `${weeklyProgress}%` }} /></div>
-                {completedSessions.length > 0 && <button type="button" onClick={resetWeek}>Reset week</button>}
+                <div className="week-progress-actions">
+                  <button className="export-transfer" type="button" onClick={exportToKivyro} disabled={!trackerReady}>Export for KIVYRO</button>
+                  {completedSessions.length > 0 && <button type="button" onClick={resetWeek}>Reset week</button>}
+                </div>
+                <p className="transfer-status" role="status" aria-live="polite">{exportNotice}</p>
               </div>
             </div>
 
