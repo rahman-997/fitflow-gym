@@ -35,7 +35,8 @@ export function buildKivyroTransfer(input: {
     throw new TypeError("The selected training plan is invalid.");
   }
 
-  const exportedAt = new Date(input.exportedAt);
+  const exportedAt = new Date(input.exportedAt.getTime());
+  const week = localMondayKey(exportedAt);
   const allowedSessions = new Map(input.sessions.map((session) => [session.id, session]));
   const seen = new Set<string>();
   const completed = input.completed.flatMap((id) => {
@@ -49,7 +50,7 @@ export function buildKivyroTransfer(input: {
     format: "fitflow-kivyro-transfer",
     version: 1,
     exportedAt: exportedAt.toISOString(),
-    week: localMondayKey(exportedAt),
+    week,
     plan: { goal: input.plan.goal, days: input.plan.days },
     completed,
   };
