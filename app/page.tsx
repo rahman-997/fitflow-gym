@@ -606,7 +606,7 @@ export default function Home() {
                 <div><span>{completedSessions.length} of {weeklySessions.length} complete</span><strong>{weeklyProgress}%</strong></div>
                 <div className="progress-track" aria-hidden="true"><span style={{ width: `${weeklyProgress}%` }} /></div>
                 <div className="week-progress-actions">
-                  <button className="export-transfer" type="button" onClick={exportToKivyro} disabled={!trackerReady}>Export for KIVYRO</button>
+                  <button className="export-transfer" type="button" onClick={exportToKivyro} disabled={!trackerReady || completedSessions.length === 0} title={completedSessions.length === 0 ? "Complete a session before exporting progress." : "Download a copy of this week’s progress for KIVYRO."}>Export for KIVYRO</button>
                   {completedSessions.length > 0 && <button type="button" onClick={resetWeek}>Reset week</button>}
                 </div>
                 <p className="transfer-status" role="status" aria-live="polite">{exportNotice}</p>
