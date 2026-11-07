@@ -14,7 +14,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "audit": "npm audit --audit-level=high",
-    "test": "npm run lint && npm run typecheck && npm run build"
+    "test": "npm run test:unit && npm run lint && npm run typecheck && npm run build",
+    "test:unit": "node --experimental-strip-types --test tests/*.test.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
