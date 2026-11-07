@@ -188,6 +188,7 @@ export default function Home() {
   const [completedSessions, setCompletedSessions] = useState<string[]>([]);
   const [trackerReady, setTrackerReady] = useState(false);
   const [exportNotice, setExportNotice] = useState("");
+  const [progressDate, setProgressDate] = useState("");
   const [timerPresetIndex, setTimerPresetIndex] = useState(0);
   const [timerPhase, setTimerPhase] = useState<"work" | "rest" | "done">("work");
   const [timerRound, setTimerRound] = useState(1);
@@ -265,6 +266,7 @@ export default function Home() {
         completed: completedSessions,
         sessions: weeklySessions,
         exportedAt: new Date(),
+        progressDate,
       });
       url = URL.createObjectURL(new Blob([JSON.stringify(transfer, null, 2)], { type: "application/json" }));
       const link = document.createElement("a");
@@ -273,7 +275,7 @@ export default function Home() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      setExportNotice("FitFlow progress exported. Your original data remains on this device.");
+      setExportNotice(`Progress for the week of ${transfer.week} exported. Your original data remains on this device.`);
     } catch {
       setExportNotice("Could not export progress in this browser. Your saved data was not changed.");
     } finally {
@@ -605,8 +607,13 @@ export default function Home() {
               <div className="week-progress" aria-live="polite">
                 <div><span>{completedSessions.length} of {weeklySessions.length} complete</span><strong>{weeklyProgress}%</strong></div>
                 <div className="progress-track" aria-hidden="true"><span style={{ width: `${weeklyProgress}%` }} /></div>
+                <label className="transfer-date" htmlFor="transfer-progress-date">
+                  Week to transfer
+                  <input id="transfer-progress-date" type="date" value={progressDate} aria-describedby="transfer-date-help" onChange={(event) => { setProgressDate(event.target.value); setExportNotice(""); }} />
+                </label>
+                <p id="transfer-date-help" className="transfer-help">Choose a day in the week these check-ins belong to. Saved check-ins do not include their original dates.</p>
                 <div className="week-progress-actions">
-                  <button className="export-transfer" type="button" onClick={exportToKivyro} disabled={!trackerReady || completedSessions.length === 0} title={completedSessions.length === 0 ? "Complete a session before exporting progress." : "Download a copy of this week’s progress for KIVYRO."}>Export for KIVYRO</button>
+                  <button className="export-transfer" type="button" onClick={exportToKivyro} disabled={!trackerReady || !planReady || !progressDate || completedSessions.length === 0} title={!progressDate ? "Choose the week for these check-ins." : completedSessions.length === 0 ? "Complete a session before exporting progress." : "Download progress for the selected week."}>Export for KIVYRO</button>
                   {completedSessions.length > 0 && <button type="button" onClick={resetWeek}>Reset week</button>}
                 </div>
                 <p className="transfer-status" role="status" aria-live="polite">{exportNotice}</p>

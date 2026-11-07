@@ -610,3 +610,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--lime); outline-
   html { scroll-behavior: auto; }
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* Explicit date selection for progress that predates export. */
+.transfer-date { display: grid; gap: 0.5rem; margin-top: 1rem; font-weight: 600; }
+.transfer-date input { box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; padding: 0.65rem; border: 1px solid currentColor; border-radius: 8px; background: #fff; color: #17251d; font: inherit; }
+.transfer-help { margin: 0.5rem 0 1rem; font-size: 0.85rem; line-height: 1.6; }

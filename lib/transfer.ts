@@ -15,20 +15,23 @@ export type KivyroProgressTransfer = {
   completed: FitFlowSession[];
 };
 
-function localMondayKey(date: Date): string {
-  if (!Number.isFinite(date.getTime())) throw new TypeError("A valid export date is required.");
-  const monday = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
-  const pad = (value: number) => String(value).padStart(2, "0");
-  return `${monday.getFullYear()}-${pad(monday.getMonth() + 1)}-${pad(monday.getDate())}`;
+function selectedMondayKey(value: string): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new TypeError("Choose a valid progress date.");
+  const date = new Date(value + "T12:00:00.000Z");
+  if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== value) {
+    throw new TypeError("Choose a valid progress date.");
+  }
+  date.setUTCDate(date.getUTCDate() - ((date.getUTCDay() + 6) % 7));
+  return date.toISOString().slice(0, 10);
 }
 
-/** Builds an opt-in, current-week-only transfer; it never reads or deletes browser storage. */
+/** Builds an opt-in, explicitly dated transfer; it never reads or deletes browser storage. */
 export function buildKivyroTransfer(input: {
   plan: { goal: FitFlowGoal; days: number };
   completed: readonly string[];
   sessions: readonly FitFlowSession[];
   exportedAt: Date;
+  progressDate: string;
 }): KivyroProgressTransfer {
   if (!["strength", "conditioning", "mobility"].includes(input.plan.goal) ||
       !Number.isInteger(input.plan.days) || input.plan.days < 2 || input.plan.days > 5) {
@@ -36,7 +39,8 @@ export function buildKivyroTransfer(input: {
   }
 
   const exportedAt = new Date(input.exportedAt.getTime());
-  const week = localMondayKey(exportedAt);
+  if (!Number.isFinite(exportedAt.getTime())) throw new TypeError("A valid export date is required.");
+  const week = selectedMondayKey(input.progressDate);
   const allowedSessions = new Map(input.sessions.map((session) => [session.id, session]));
   const seen = new Set<string>();
   const completed = input.completed.flatMap((id) => {
