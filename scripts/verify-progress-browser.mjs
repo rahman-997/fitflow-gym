@@ -31,7 +31,21 @@ try {
       await expect(page.locator(".week-progress > div:first-child > span")).toHaveText("3 of 4 complete");
       assert.deepEqual(JSON.parse(await page.evaluate(() => localStorage.getItem("fitflow-week"))), ["upper", "engine", "reset"]);
       assert.ok(!(await page.locator(".week-progress").innerText()).includes("exported"));
-      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${width}px horizontal overflow`);
+      const layout = await page.evaluate(() => ({
+        viewport: innerWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+        bodyWidth: document.body.scrollWidth,
+        nodes: [...document.querySelectorAll("body *")].flatMap(node => {
+          const box = node.getBoundingClientRect();
+          if (!box.width || !box.height || (box.right <= innerWidth + 1 && box.left >= -1)) return [];
+          return [{ tag: node.tagName, class: typeof node.className === "string" ? node.className : "", left: box.left, right: box.right, width: box.width }];
+        }).slice(0, 30),
+      }));
+      if (layout.scrollWidth > width) {
+        console.error("FITFLOW_LAYOUT=" + JSON.stringify(layout));
+        await page.screenshot({ path: `${out}/FAIL-${width}.png`, fullPage: true, animations: "disabled" });
+      }
+      assert.ok(layout.scrollWidth <= width, `${width}px horizontal overflow`);
       await page.locator("#my-week").screenshot({ path: `${out}/progress-${width}.png`, animations: "disabled" });
       results.push({ scenario: `${width}px progress/export/edit`, result: "PASS" });
     } finally { await context.close(); }
