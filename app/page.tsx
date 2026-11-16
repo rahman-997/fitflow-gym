@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { buildKivyroTransfer } from "../lib/transfer";
+import { normalizeCompletedSessions } from "../lib/progress";
 
 const features = [
   {
@@ -188,6 +189,7 @@ export default function Home() {
   const [completedSessions, setCompletedSessions] = useState<string[]>([]);
   const [trackerReady, setTrackerReady] = useState(false);
   const [exportNotice, setExportNotice] = useState("");
+  const [storageNotice, setStorageNotice] = useState("");
   const [progressDate, setProgressDate] = useState("");
   const [timerPresetIndex, setTimerPresetIndex] = useState(0);
   const [timerPhase, setTimerPhase] = useState<"work" | "rest" | "done">("work");
@@ -209,13 +211,9 @@ export default function Home() {
     const hydrateTracker = () => {
       try {
         const savedSessions = JSON.parse(localStorage.getItem("fitflow-week") ?? "[]");
-        if (Array.isArray(savedSessions)) setCompletedSessions(savedSessions.filter((item): item is string => typeof item === "string"));
+        setCompletedSessions(normalizeCompletedSessions(savedSessions, weeklySessions));
       } catch {
-        try {
-          localStorage.removeItem("fitflow-week");
-        } catch {
-          // Storage can be unavailable in hardened browser contexts.
-        }
+        setStorageNotice("Saved progress could not be read. Your stored data has been kept.");
       }
       setTrackerReady(true);
     };
@@ -286,12 +284,14 @@ export default function Home() {
   const persistSessions = (sessions: string[]) => {
     try {
       localStorage.setItem("fitflow-week", JSON.stringify(sessions));
+      setStorageNotice("");
     } catch {
-      // The UI still works when storage is unavailable; persistence is best effort.
+      setStorageNotice("Progress is available in this tab, but could not be saved on this device. Export it before closing.");
     }
   };
 
   const toggleSession = (sessionId: string) => {
+    setExportNotice("");
     setCompletedSessions((current) => {
       const next = current.includes(sessionId)
         ? current.filter((id) => id !== sessionId)
@@ -302,11 +302,13 @@ export default function Home() {
   };
 
   const resetWeek = () => {
+    setExportNotice("");
     setCompletedSessions([]);
     try {
       localStorage.removeItem("fitflow-week");
+      setStorageNotice("");
     } catch {
-      // Ignore unavailable storage.
+      setStorageNotice("Progress was reset in this tab, but could not be cleared from device storage.");
     }
   };
 
@@ -617,6 +619,7 @@ export default function Home() {
                   {completedSessions.length > 0 && <button type="button" onClick={resetWeek}>Reset week</button>}
                 </div>
                 <p className="transfer-status" role="status" aria-live="polite">{exportNotice}</p>
+                <p className="transfer-status" role="status" aria-live="polite">{storageNotice}</p>
               </div>
             </div>
 
