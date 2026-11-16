@@ -18,6 +18,14 @@ try {
       await page.goto(base, { waitUntil: "domcontentloaded" });
       await expect(page.locator(".week-progress > div:first-child > span")).toHaveText("2 of 4 complete");
       assert.deepEqual(JSON.parse(await page.evaluate(() => localStorage.getItem("fitflow-week"))), ["upper", "upper", "obsolete", 17, "engine"]);
+      if (width < 820) {
+        const nav = page.getByRole("navigation", { name: "Primary navigation", includeHidden: true });
+        await expect(nav).toBeHidden();
+        await page.getByRole("button", { name: "Open navigation menu" }).click();
+        await expect(nav).toBeVisible();
+        await nav.getByRole("link", { name: "My Week", exact: true }).click();
+        await expect(nav).toBeHidden();
+      }
       await page.getByRole("button", { name: "Reveal My Plan" }).click();
       await page.locator("#transfer-progress-date").fill("2025-12-31");
       const downloading = page.waitForEvent("download");
