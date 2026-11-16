@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { WEEKLY_PROGRESS_KEY, parseWeeklyProgress, parseLegacyProgress, serializeWeeklyProgress } from "@/lib/weekly-progress.mjs";
 
 const features = [
   {
@@ -125,6 +126,8 @@ const weeklySessions = [
   { id: "full", day: "SUN", title: "Full Body", type: "Strength", duration: "50 min", icon: "◇" },
 ] as const;
 
+const validWeeklySessionIds = weeklySessions.map((session) => session.id);
+
 const timerPresets = [
   { label: "Quick HIIT", detail: "20s work · 10s rest", work: 20, rest: 10, rounds: 8 },
   { label: "Strength", detail: "45s work · 20s rest", work: 45, rest: 20, rounds: 6 },
@@ -205,20 +208,32 @@ export default function Home() {
   useEffect(() => {
     const hydrateTracker = () => {
       try {
-        const savedSessions = JSON.parse(localStorage.getItem("fitflow-week") ?? "[]");
-        if (Array.isArray(savedSessions)) setCompletedSessions(savedSessions.filter((item): item is string => typeof item === "string"));
-      } catch {
-        try {
-          localStorage.removeItem("fitflow-week");
-        } catch {
-          // Storage can be unavailable in hardened browser contexts.
+        const scoped = localStorage.getItem(WEEKLY_PROGRESS_KEY);
+        const sessions = scoped !== null
+          ? parseWeeklyProgress(scoped, validWeeklySessionIds)
+          : parseLegacyProgress(localStorage.getItem("fitflow-week"), validWeeklySessionIds);
+        setCompletedSessions(sessions);
+        // Legacy progress has no timestamp. Treat first migration as the current week.
+        // Keep the old key untouched; do not destroy unscoped user data automatically.
+        if (scoped === null) {
+          localStorage.setItem(WEEKLY_PROGRESS_KEY, serializeWeeklyProgress(sessions, validWeeklySessionIds));
         }
+      } catch {
+        // Storage can be unavailable in hardened browser contexts.
       }
       setTrackerReady(true);
     };
-
+    const onVisible = () => {
+      if (document.visibilityState === "visible") hydrateTracker();
+    };
     const timer = window.setTimeout(hydrateTracker, 0);
-    return () => window.clearTimeout(timer);
+    window.addEventListener("focus", hydrateTracker);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("focus", hydrateTracker);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   useEffect(() => {
@@ -257,7 +272,7 @@ export default function Home() {
 
   const persistSessions = (sessions: string[]) => {
     try {
-      localStorage.setItem("fitflow-week", JSON.stringify(sessions));
+      localStorage.setItem(WEEKLY_PROGRESS_KEY, serializeWeeklyProgress(sessions, validWeeklySessionIds));
     } catch {
       // The UI still works when storage is unavailable; persistence is best effort.
     }
@@ -276,6 +291,7 @@ export default function Home() {
   const resetWeek = () => {
     setCompletedSessions([]);
     try {
+      localStorage.removeItem(WEEKLY_PROGRESS_KEY);
       localStorage.removeItem("fitflow-week");
     } catch {
       // Ignore unavailable storage.
