@@ -16,7 +16,7 @@ try {
     page.on("pageerror", error => errors.push(error.message));
     try {
       await page.goto(base, { waitUntil: "domcontentloaded" });
-      await expect(page.locator(".week-progress > div > span")).toHaveText("2 of 4 complete");
+      await expect(page.locator(".week-progress > div:first-child > span")).toHaveText("2 of 4 complete");
       assert.deepEqual(JSON.parse(await page.evaluate(() => localStorage.getItem("fitflow-week"))), ["upper", "upper", "obsolete", 17, "engine"]);
       await page.getByRole("button", { name: "Reveal My Plan" }).click();
       await page.locator("#transfer-progress-date").fill("2025-12-31");
@@ -28,7 +28,7 @@ try {
       assert.deepEqual(transfer.completed.map(session => session.id), ["upper", "engine"]);
       await expect(page.getByText("Progress for the week of 2025-12-29 exported.", { exact: false })).toBeVisible();
       await page.locator(".session-card").nth(2).getByRole("button").click();
-      await expect(page.locator(".week-progress > div > span")).toHaveText("3 of 4 complete");
+      await expect(page.locator(".week-progress > div:first-child > span")).toHaveText("3 of 4 complete");
       assert.deepEqual(JSON.parse(await page.evaluate(() => localStorage.getItem("fitflow-week"))), ["upper", "engine", "reset"]);
       assert.ok(!(await page.locator(".week-progress").innerText()).includes("exported"));
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${width}px horizontal overflow`);
@@ -52,7 +52,7 @@ try {
       } else {
         await page.locator(".session-card").first().getByRole("button").click();
         await expect(page.getByText("Progress is available in this tab, but could not be saved on this device. Export it before closing.")).toBeVisible();
-        await expect(page.locator(".week-progress > div > span")).toHaveText("1 of 4 complete");
+        await expect(page.locator(".week-progress > div:first-child > span")).toHaveText("1 of 4 complete");
       }
       results.push({ scenario, result: "PASS" });
     } finally { await context.close(); }
