@@ -34,7 +34,7 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
   // Never persist query-string variants, authorization requests, or private responses.
-  if (url.search || request.headers.has("authorization")) return;
+  if (url.search || request.headers.has("authorization") || url.pathname.startsWith("/api/")) return;
 
   if (request.mode === "navigate") {
     if (url.pathname !== "/" && url.pathname !== "/index.html") return;
