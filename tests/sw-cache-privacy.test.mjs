@@ -43,6 +43,7 @@ test('private URLs, tokens and non-static endpoints bypass service-worker interc
   const {fire,stored}=fixture();
   assert.equal(await fire('https://fitflow.example/asset.css?token=sensitive'),false);
   assert.equal(await fire('https://fitflow.example/api/profile'),false);
+  assert.equal(await fire('https://fitflow.example/api/private.js'),false);
   assert.equal(await fire('https://fitflow.example/account',{mode:'navigate'}),false);
   assert.equal(await fire('https://fitflow.example/asset.js',{headers:{authorization:'Bearer secret'}}),false);
   assert.equal(await fire('https://other.example/asset.css'),false);
