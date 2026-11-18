@@ -1,8 +1,9 @@
 const CACHE_PREFIX = "fitflow-";
-const SHELL_CACHE = "fitflow-shell-v3";
-const RUNTIME_CACHE = "fitflow-runtime-v3";
+const SHELL_CACHE = "fitflow-shell-v4";
+const RUNTIME_CACHE = "fitflow-runtime-v4";
 const MAX_RUNTIME_ENTRIES = 80;
 const ACTIVE_CACHES = new Set([SHELL_CACHE, RUNTIME_CACHE]);
+const STATIC_ASSET = /\.(?:css|js|mjs|png|jpe?g|webp|svg|ico|woff2?|webmanifest)$/i;
 const CORE_ASSETS = ["/", "/favicon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -32,8 +33,11 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  // Never persist query-string variants, authorization requests, or private responses.
+  if (url.search || request.headers.has("authorization") || url.pathname.startsWith("/api/")) return;
 
   if (request.mode === "navigate") {
+    if (url.pathname !== "/" && url.pathname !== "/index.html") return;
     event.respondWith(networkFirstNavigation(request));
     return;
   }
@@ -43,7 +47,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  event.respondWith(networkFirstRequest(request));
+  if (STATIC_ASSET.test(url.pathname)) event.respondWith(networkFirstRequest(request));
 });
 
 async function networkFirstNavigation(request) {
@@ -76,7 +80,9 @@ async function cacheFirstAsset(request) {
 }
 
 async function cacheResponse(cacheName, request, response) {
-  if (!response.ok || response.type === "opaque") return;
+  if (!response.ok || response.type === "opaque" ||
+      /(?:^|,)\s*(?:private|no-store)\b/i.test(response.headers.get("cache-control") || "") ||
+      response.headers.has("set-cookie")) return;
   const cache = await caches.open(cacheName);
   await cache.put(request, response.clone());
   if (cacheName === RUNTIME_CACHE) await trimCache(cacheName, MAX_RUNTIME_ENTRIES);
