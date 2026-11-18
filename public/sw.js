@@ -61,8 +61,9 @@ self.addEventListener("fetch", (event) => {
 
 async function networkFirstNavigation(request) {
   try {
+    // Navigation HTML can be session-specific. Offline fallback uses only the
+    // credential-free shell pre-cached during install.
     const response = await fetch(request);
-    await cacheResponse(RUNTIME_CACHE, request, response);
     return response;
   } catch {
     return (await caches.match(request)) || (await caches.match("/")) || Response.error();
@@ -90,7 +91,7 @@ async function cacheFirstAsset(request) {
 
 async function cacheResponse(cacheName, request, response) {
   if (!response.ok || response.type === "opaque" ||
-      /(?:^|,)\s*(?:private|no-store)\b/i.test(response.headers.get("cache-control") || "") ||
+      /(?:^|,)\s*(?:private|no-store|no-cache)\b/i.test(response.headers.get("cache-control") || "") ||
       response.headers.has("set-cookie")) return;
   const cache = await caches.open(cacheName);
   await cache.put(request, response.clone());
