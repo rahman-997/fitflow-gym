@@ -5,6 +5,13 @@ const MAX_RUNTIME_ENTRIES = 80;
 const ACTIVE_CACHES = new Set([SHELL_CACHE, RUNTIME_CACHE]);
 const STATIC_ASSET = /\.(?:css|js|mjs|png|jpe?g|webp|svg|ico|woff2?|webmanifest)$/i;
 const CORE_ASSETS = ["/", "/favicon.svg"];
+// Explicitly known public resources; never cache an arbitrary user-controlled
+// path merely because it ends with .svg, .png, .css, or .js.
+const PUBLIC_ASSETS = new Set([
+  "/favicon.svg", "/icon-192.png", "/icon-512.png",
+  "/manifest.webmanifest", "/og.png",
+  "/assets/fitflow-hero.png", "/assets/fitflow-programs-grid.png",
+]);
 
 self.addEventListener("install", (event) => {
   // Never bypass the privacy filter when pre-caching the shell. Do not send
@@ -56,7 +63,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (STATIC_ASSET.test(url.pathname)) event.respondWith(networkFirstRequest(request));
+  if (PUBLIC_ASSETS.has(url.pathname) && STATIC_ASSET.test(url.pathname)) event.respondWith(networkFirstRequest(request));
 });
 
 async function networkFirstNavigation(request) {
@@ -90,6 +97,11 @@ async function cacheFirstAsset(request) {
 }
 
 async function cacheResponse(cacheName, request, response) {
+  // Cache Storage can replay a user-specific representation while offline.
+  // Do not persist content keyed on cookies, auth headers, or wildcard Vary.
+  const vary = (response.headers.get("vary") || "")
+    .split(",").map((header) => header.trim().toLowerCase());
+  if (vary.some((header) => header === "*" || header === "cookie" || header === "authorization")) return;
   if (!response.ok || response.type === "opaque" ||
       /(?:^|,)\s*(?:private|no-store|no-cache)\b/i.test(response.headers.get("cache-control") || "") ||
       response.headers.has("set-cookie")) return;
