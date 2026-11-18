@@ -23,7 +23,7 @@ function fixture() {
     self: {location:{origin:'https://fitflow.example'},addEventListener(name,cb){handlers.set(name,cb);},skipWaiting(){},clients:{claim(){}}},
     caches: {
       open:async()=>cache, match:async()=>null,
-      keys:async()=>["fitflow-shell-v4", "fitflow-runtime-v4", "fitflow-shell-v5", "fitflow-runtime-v5", "other-owner"],
+      keys:async()=>["fitflow-shell-v4", "fitflow-runtime-v4", "fitflow-shell-v5", "fitflow-runtime-v5", "fitflow-shell-v6", "fitflow-runtime-v6", "other-owner"],
       delete:async name=>{deletedCaches.push(name);return true;},
     },
     fetch:async request=>{
@@ -106,7 +106,7 @@ test('install caches public shell using credential-free fetches and response che
 test('activation retires the old pre-cache generation that bypassed privacy checks',async()=>{
   const {activate,deletedCaches}=fixture();
   await activate();
-  assert.deepEqual(deletedCaches,["fitflow-shell-v4","fitflow-runtime-v4"]);
+  assert.ok(deletedCaches.includes("fitflow-shell-v4") && deletedCaches.includes("fitflow-runtime-v4"));
 });
 
 test('Cache-Control no-cache responses must not be saved for offline reuse', async () => {
@@ -162,4 +162,15 @@ test('credential-free install still pre-caches a public HTML shell for offline n
     }),
   });
   assert.ok(stored.includes('https://fitflow.example/'), 'public HTML home must stay available offline');
+});
+
+
+test('activation discards v5 caches that may contain pre-hardening private responses', async () => {
+  const {activate, deletedCaches} = fixture();
+  await activate();
+  assert.ok(deletedCaches.includes('fitflow-shell-v5'));
+  assert.ok(deletedCaches.includes('fitflow-runtime-v5'));
+  assert.equal(deletedCaches.includes('fitflow-shell-v6'), false);
+  assert.equal(deletedCaches.includes('fitflow-runtime-v6'), false);
+  assert.equal(deletedCaches.includes('other-owner'), false);
 });
