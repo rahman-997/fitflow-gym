@@ -86,3 +86,13 @@ The existing FitFlow v5 Service Worker still cached response bodies when a stati
 - `tests/sw-cache-privacy.test.mjs`: `40551c8772b5deaad9e2618d2be0e3434b05d5c8`
 
 **Scope:** Service Worker only. No full Next.js build, browser offline E2E, live dependency audit, CI run, merge or deployment was executed. The project remains **NO-GO** until all release gates and the unresolved `picomatch` advisory are handled.
+
+## Follow-up: v6 privacy-cache invalidation — native 12-test gate
+
+The latest response guards changed cache policy after older `fitflow-shell-v5` and `fitflow-runtime-v5` entries may already have persisted responses. Without cache namespace migration those entries could remain available offline even after the source-level fix.
+
+- Regression added **before fix**: a new native Node test requires activation to delete both v5 names, while retaining new v6 and unrelated cache namespaces (commit `13919f1`). **RED: 11/12 tests passed, 1 expected failure** on the old v5 implementation.
+- Fixed Service Worker cache names to `fitflow-shell-v6` and `fitflow-runtime-v6`, using the existing activation filter to remove prior v4 and v5 entries (commit `2b6f1a5`).
+- **GREEN:** actual Node v22.16.0 `node --test tests/sw-cache-privacy.test.mjs` reports **12/12 passed**, 0 failed; `node --check public/sw.js` passed.
+- Byte-level verification against GitHub after committing: `public/sw.js` Git blob `f2bbd70558a841bad92fdefa5e3dea6ee9562095`; `tests/sw-cache-privacy.test.mjs` blob `1a59a0b27c7bd6ab732a38d25b3582968980f4f1`. The local native Node source and tests have identical Git blob hashes.
+- All tests validate isolated Service Worker behavior only, **not a browser's real CacheStorage/WebView, a Next.js production build, npm audit, or a full repo E2E run**. Do not merge or deploy; known upstream dependency security blockers remain unresolved.
