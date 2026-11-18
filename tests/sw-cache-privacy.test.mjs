@@ -153,3 +153,13 @@ test('download attachments and HTML response under static-looking paths never en
   });
   assert.deepEqual(stored, [], 'response metadata, not just pathname, must govern caching');
 });
+
+test('credential-free install still pre-caches a public HTML shell for offline navigation', async () => {
+  const {install, stored} = fixture();
+  await install({
+    'https://fitflow.example/': new Response('<!doctype html><title>FitFlow</title>', {
+      headers: {'content-type': 'text/html; charset=utf-8'},
+    }),
+  });
+  assert.ok(stored.includes('https://fitflow.example/'), 'public HTML home must stay available offline');
+});
