@@ -56,26 +56,26 @@ function fixture() {
 
 test('only safe same-origin static assets are cached',async()=>{
   const {fire,stored}=fixture();
-  assert.equal(await fire('https://fitflow.example/asset.css'),true);
-  assert.deepEqual(stored,['https://fitflow.example/asset.css']);
+  assert.equal(await fire('https://fitflow.example/assets/fitflow-hero.png'),true);
+  assert.deepEqual(stored,['https://fitflow.example/assets/fitflow-hero.png']);
 });
 
 test('private URLs, tokens and non-static endpoints bypass service-worker interception',async()=>{
   const {fire,stored}=fixture();
-  assert.equal(await fire('https://fitflow.example/asset.css?token=sensitive'),false);
+  assert.equal(await fire('https://fitflow.example/assets/fitflow-hero.png?token=sensitive'),false);
   assert.equal(await fire('https://fitflow.example/api/profile'),false);
   assert.equal(await fire('https://fitflow.example/api/private.js'),false);
   assert.equal(await fire('https://fitflow.example/account',{mode:'navigate'}),false);
-  assert.equal(await fire('https://fitflow.example/asset.js',{headers:{authorization:'Bearer secret'}}),false);
-  assert.equal(await fire('https://other.example/asset.css'),false);
+  assert.equal(await fire('https://fitflow.example/assets/fitflow-hero.png',{headers:{authorization:'Bearer secret'}}),false);
+  assert.equal(await fire('https://other.example/assets/fitflow-hero.png'),false);
   assert.deepEqual(stored,[]);
 });
 
 test('Cache-Control private/no-store and Set-Cookie prevent caching',async()=>{
   const {fire,stored}=fixture();
-  await fire('https://fitflow.example/private.css',{response:new Response('private',{headers:{'cache-control':'private'}})});
-  await fire('https://fitflow.example/no-store.js',{response:new Response('sensitive',{headers:{'cache-control':'no-store'}})});
-  await fire('https://fitflow.example/session.svg',{response:new Response('sensitive',{headers:{'set-cookie':'session=secret'}})});
+  assert.equal(await fire('https://fitflow.example/assets/fitflow-hero.png',{response:new Response('private',{headers:{'cache-control':'private'}})}),true);
+  assert.equal(await fire('https://fitflow.example/assets/fitflow-programs-grid.png',{response:new Response('sensitive',{headers:{'cache-control':'no-store'}})}),true);
+  assert.equal(await fire('https://fitflow.example/icon-192.png',{response:new Response('sensitive',{headers:{'set-cookie':'session=secret'}})}),true);
   assert.deepEqual(stored,[]);
 });
 
@@ -111,11 +111,11 @@ test('activation retires the old pre-cache generation that bypassed privacy chec
 
 test('Cache-Control no-cache responses must not be saved for offline reuse', async () => {
   const { fire, stored } = fixture();
-  await fire('https://fitflow.example/live.js', {
+  assert.equal(await fire('https://fitflow.example/manifest.webmanifest', {
     response: new Response('session-bound response', {
       headers: { 'cache-control': 'max-age=0, no-cache' },
     }),
-  });
+  }),true);
   assert.deepEqual(stored, []);
 });
 
