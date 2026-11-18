@@ -7,7 +7,16 @@ const STATIC_ASSET = /\.(?:css|js|mjs|png|jpe?g|webp|svg|ico|woff2?|webmanifest)
 const CORE_ASSETS = ["/", "/favicon.svg"];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(SHELL_CACHE).then((cache) => cache.addAll(CORE_ASSETS)));
+  // Never bypass the privacy filter when pre-caching the shell. Do not send
+  // session cookies even if the worker registers during an authenticated visit.
+  event.waitUntil(Promise.all(CORE_ASSETS.map(async (asset) => {
+    const request = new Request(new URL(asset, self.location.origin), {
+      credentials: "omit",
+      cache: "no-store",
+    });
+    const response = await fetch(request);
+    await cacheResponse(SHELL_CACHE, request, response);
+  })));
   self.skipWaiting();
 });
 
