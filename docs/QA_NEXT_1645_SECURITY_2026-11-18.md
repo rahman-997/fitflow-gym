@@ -72,3 +72,17 @@ This test run uses **actual Node v22.16.0** and the built-in VM test harness, no
 - Fixed `cacheResponse` to reject `no-cache`, and changed `networkFirstNavigation` to never cache live navigation HTML. Offline fallback continues to use the public, credential-free pre-cache produced during `install` (fix commit `28d6dce`).
 - **Green: 8/8 tests passed using native Node.js v22.16.0**, `node --check public/sw.js` passed. Compared local Git blob SHAs to GitHub readbacks: `public/sw.js = 3f0ce0fd2cfffd0dea76a7667d6645b4e6cda160`, `tests/sw-cache-privacy.test.mjs = dfa3c15739bf730fe1e3c734726860c330182a98`.
 - This is only the Service Worker subsystem. **No full-repo npm installation, Next.js production build, browser E2E, real npm security audit or Actions run** for this stacked branch. The unresolved `picomatch` advisory remains a blocker. No publication/merge/paid usage.
+
+## Follow-up: response metadata privacy and public offline HTML (v3)
+
+The existing FitFlow v5 Service Worker still cached response bodies when a static-looking path returned `Vary: Cookie`/`Vary: Authorization`/`Vary: *`, a `Content-Disposition` attachment or a mismatched HTML fallback. The response pathname alone is not proof of public cacheability.
+
+**Test-first validation, real Node v22.16.0:** added two regression tests covering these response metadata cases (commit `02ca633`). Baseline with the new tests: **8 pass / 2 fail** as expected. Hardened `cacheResponse()` (commit `77a7588`); initial **10/10 pass**.
+
+**Important secondary regression:** because ordinary public home documents use `Content-Type: text/html`, a blanket HTML rejection would break the previously hardened offline install shell. Added another test (commit `bd8962e`) that failed as expected: **10 pass / 1 fail**. Adjusted the HTML guard (commit `c74f233`) to allow **only** the public home (`/`) fetched during the Service Worker install with `credentials: omit`, after checking `Cache-Control`, `Set-Cookie`, `Vary`, and `Content-Disposition`. Other HTML responses are not cached.
+
+**Final verified result:** native `node --test tests/sw-cache-privacy.test.mjs` **11/11 pass**, `node --check public/sw.js` passes. GitHub readback and tested local source match exactly by Git blob SHA:
+- `public/sw.js`: `4abdf1713a21f8a5a0648ca9189371a0af8b52dc`
+- `tests/sw-cache-privacy.test.mjs`: `40551c8772b5deaad9e2618d2be0e3434b05d5c8`
+
+**Scope:** Service Worker only. No full Next.js build, browser offline E2E, live dependency audit, CI run, merge or deployment was executed. The project remains **NO-GO** until all release gates and the unresolved `picomatch` advisory are handled.
