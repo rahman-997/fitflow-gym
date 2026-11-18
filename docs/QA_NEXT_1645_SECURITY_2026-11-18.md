@@ -49,3 +49,17 @@ Official advisory [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-
 - A separate local shell simulation of the CI audit command returned the expected exit statuses on clean audit (0), vulnerability (1), outage (1), and timeout (124): **4/4 passed**.
 - GitHub advisory `GHSA-fc5q-39xc-vjpf` remained high severity with no patched version advertised (official GitHub Advisory last updated 2026-11-17). Both `picomatch` lock entries remain affected and are marked `dev: true`.
 - **Not yet verified:** full `npm ci`, native lint/typecheck/build, live audit, browser E2E or CI on this stacked Draft branch. Do not merge, deploy or approve for sale.
+
+## 2026-11-18 — FitFlow PWA installation privacy regression (real Node execution)
+
+**Confirmed vulnerability path:** The prior Service Worker `install` handler directly called `cache.addAll(['/', '/favicon.svg'])`, bypassing the guarded `cacheResponse` routine. An authenticated installation could therefore cache a response without testing `Cache-Control: private/no-store` or `Set-Cookie`.
+
+**Test-first remediation:** Two new native Node `node --test` regressions were executed against a local source snapshot whose original Git blob SHA matched the GitHub branch exactly (`4528b1bb3b595716dfa06ceb9c28059a10623703`). The result was **3 passed / 2 failed (expected red)**. After replacing `addAll` with credential-free `fetch(new Request(..., {credentials:'omit',cache:'no-store'}))` and using `cacheResponse`, all five passed.
+
+**Existing unsafe caches:** A sixth test detected that reusing the `v4` cache namespace retains preexisting entries. Rotated `fitflow-shell-v4` and `fitflow-runtime-v4` to `v5`, leveraging the existing activation filter to delete v4 only and preserve unrelated cache namespaces. Before the cache-version fix: **5 passed / 1 failed**. After: **6/6 passed**, plus `node --check public/sw.js` succeeded.
+
+**Exact source parity:** Local tested snapshots were byte-for-byte verified against the current GitHub blob SHAs:
+- `public/sw.js`: `655831b139df0e84f2fae4a5362f7f643b1094af`
+- `tests/sw-cache-privacy.test.mjs`: `88e8323409746ad385690982dec2104f6e9dcc5e`
+
+This test run uses **actual Node v22.16.0** and the built-in VM test harness, not simulated test callbacks. The full repository `npm ci`, Next.js build, browser acceptance, and live `npm audit` are still **not executed** on this stacked Draft branch. The independent picomatch ReDoS advisory is not resolved; no audit suppression, PR merge, deployment, or paid GitHub Actions run was performed.
