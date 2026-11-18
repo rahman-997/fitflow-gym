@@ -35,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Dependency lock integrity
+        run: npm run test:dependency-lock
+
       - name: Lint
         run: npm run lint
 
@@ -50,22 +53,5 @@ jobs:
       - name: Service Worker cache privacy regressions
         run: npm run test:sw
 
-      - name: Dependency audit
-        shell: bash
-        run: |
-          set +e
-          audit_output="$(timeout 120s npm run audit 2>&1)"
-          audit_status=$?
-          set -e
-          printf '%s\n' "$audit_output"
-
-          if [ "$audit_status" -eq 0 ]; then
-            exit 0
-          fi
-
-          if [ "$audit_status" -eq 124 ] || printf '%s\n' "$audit_output" | grep -Eq 'Service Unavailable|audit endpoint returned an error|ECONNRESET|ETIMEDOUT|EAI_AGAIN'; then
-            echo '::warning::npm audit service is temporarily unavailable; CodeQL, Semgrep and Dependabot remain active, so CI will not fail on this external outage.'
-            exit 0
-          fi
-
-          exit "$audit_status"
+      - name: Dependency audit (blocking)
+        run: timeout 120s npm run audit
