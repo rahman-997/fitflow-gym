@@ -11,6 +11,7 @@ function fixture() {
   const responses = new Map();
   const bulkCached = [];
   const installFetches = [];
+  const deletedCaches = [];
   const cache = {
     async addAll(paths) { bulkCached.push(...paths); },
     async keys() { return []; },
@@ -20,7 +21,11 @@ function fixture() {
   const ctx = {
     URL, Request, Response,
     self: {location:{origin:'https://fitflow.example'},addEventListener(name,cb){handlers.set(name,cb);},skipWaiting(){},clients:{claim(){}}},
-    caches: {open:async()=>cache,match:async()=>null,keys:async()=>[]},
+    caches: {
+      open:async()=>cache, match:async()=>null,
+      keys:async()=>["fitflow-shell-v4", "fitflow-runtime-v4", "fitflow-shell-v5", "fitflow-runtime-v5", "other-owner"],
+      delete:async name=>{deletedCaches.push(name);return true;},
+    },
     fetch:async request=>{
       installFetches.push({url: request.url, credentials: request.credentials});
       return responses.get(request.url) ?? new Response('ok');
@@ -41,7 +46,12 @@ function fixture() {
     handlers.get('install')({waitUntil(promise){pending=promise;}});
     if (pending) await pending;
   }
-  return {fire,install,stored,bulkCached,installFetches};
+  async function activate() {
+    let pending;
+    handlers.get('activate')({waitUntil(promise){pending=promise;}});
+    if (pending) await pending;
+  }
+  return {fire,install,activate,stored,bulkCached,installFetches,deletedCaches};
 }
 
 test('only safe same-origin static assets are cached',async()=>{
@@ -90,4 +100,11 @@ test('install caches public shell using credential-free fetches and response che
   ]);
   assert.equal(installFetches.length,2);
   assert.ok(installFetches.every(item=>item.credentials==='omit'), 'never send session cookies when pre-caching');
+});
+
+
+test('activation retires the old pre-cache generation that bypassed privacy checks',async()=>{
+  const {activate,deletedCaches}=fixture();
+  await activate();
+  assert.deepEqual(deletedCaches,["fitflow-shell-v4","fitflow-runtime-v4"]);
 });
