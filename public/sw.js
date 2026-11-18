@@ -94,11 +94,14 @@ async function cacheResponse(cacheName, request, response) {
   // Vary: Cookie/Authorization, HTML fallbacks, or downloads persist offline.
   const vary = response.headers.get("vary") || "";
   const contentType = (response.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+  const url = new URL(request.url);
+  const publicOfflineShell = cacheName === SHELL_CACHE && request.credentials === "omit" &&
+    url.origin === self.location.origin && url.pathname === "/" && !url.search;
   if (!response.ok || response.type === "opaque" ||
       /(?:^|,)\s*(?:private|no-store|no-cache)\b/i.test(response.headers.get("cache-control") || "") ||
       response.headers.has("set-cookie") || response.headers.has("content-disposition") ||
       /(?:^|,)\s*(?:cookie|authorization|\*)\s*(?:,|$)/i.test(vary) ||
-      contentType === "text/html" || contentType === "application/xhtml+xml") return;
+      (!publicOfflineShell && (contentType === "text/html" || contentType === "application/xhtml+xml"))) return;
   const cache = await caches.open(cacheName);
   await cache.put(request, response.clone());
   if (cacheName === RUNTIME_CACHE) await trimCache(cacheName, MAX_RUNTIME_ENTRIES);
