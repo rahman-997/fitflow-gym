@@ -44,5 +44,16 @@ test('preserve existing targeted minimatch override where configured', () => {
   assert.match(lock.packages[path]?.integrity ?? '', /^sha512-/);
 });
 
+test('PWA privacy regression is preserved in both local tests and CI', () => {
+  assert.equal(pkg.scripts['test:sw'], 'node --test tests/sw-cache-privacy.test.mjs');
+  assert.match(pkg.scripts.test, /npm run test:sw/);
+  const workflow = readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8');
+  assert.match(workflow, /Service Worker cache privacy regressions[\s\S]*?npm run test:sw/);
+  assert.match(
+    readFileSync(new URL('./sw-cache-privacy.test.mjs', import.meta.url), 'utf8'),
+    /private URLs, tokens and non-static endpoints bypass service-worker interception/
+  );
+});
+
 // Separate npm audit remains mandatory. This guard does not waive known
 // picomatch ReDoS advisories or establish production security.
