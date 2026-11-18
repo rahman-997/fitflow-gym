@@ -1,13 +1,22 @@
 const CACHE_PREFIX = "fitflow-";
-const SHELL_CACHE = "fitflow-shell-v4";
-const RUNTIME_CACHE = "fitflow-runtime-v4";
+const SHELL_CACHE = "fitflow-shell-v6";
+const RUNTIME_CACHE = "fitflow-runtime-v6";
 const MAX_RUNTIME_ENTRIES = 80;
 const ACTIVE_CACHES = new Set([SHELL_CACHE, RUNTIME_CACHE]);
 const STATIC_ASSET = /\.(?:css|js|mjs|png|jpe?g|webp|svg|ico|woff2?|webmanifest)$/i;
 const CORE_ASSETS = ["/", "/favicon.svg"];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(SHELL_CACHE).then((cache) => cache.addAll(CORE_ASSETS)));
+  // Never bypass the privacy filter when pre-caching the shell. Do not send
+  // session cookies even if the worker registers during an authenticated visit.
+  event.waitUntil(Promise.all(CORE_ASSETS.map(async (asset) => {
+    const request = new Request(new URL(asset, self.location.origin), {
+      credentials: "omit",
+      cache: "no-store",
+    });
+    const response = await fetch(request);
+    await cacheResponse(SHELL_CACHE, request, response);
+  })));
   self.skipWaiting();
 });
 
@@ -52,8 +61,9 @@ self.addEventListener("fetch", (event) => {
 
 async function networkFirstNavigation(request) {
   try {
+    // Navigation HTML can be session-specific. Offline fallback uses only the
+    // credential-free shell pre-cached during install.
     const response = await fetch(request);
-    await cacheResponse(RUNTIME_CACHE, request, response);
     return response;
   } catch {
     return (await caches.match(request)) || (await caches.match("/")) || Response.error();
@@ -80,9 +90,18 @@ async function cacheFirstAsset(request) {
 }
 
 async function cacheResponse(cacheName, request, response) {
+  // A public-looking URL can still return user-specific content. Do not let
+  // Vary: Cookie/Authorization, HTML fallbacks, or downloads persist offline.
+  const vary = response.headers.get("vary") || "";
+  const contentType = (response.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+  const url = new URL(request.url);
+  const publicOfflineShell = cacheName === SHELL_CACHE && request.credentials === "omit" &&
+    url.origin === self.location.origin && url.pathname === "/" && !url.search;
   if (!response.ok || response.type === "opaque" ||
-      /(?:^|,)\s*(?:private|no-store)\b/i.test(response.headers.get("cache-control") || "") ||
-      response.headers.has("set-cookie")) return;
+      /(?:^|,)\s*(?:private|no-store|no-cache)\b/i.test(response.headers.get("cache-control") || "") ||
+      response.headers.has("set-cookie") || response.headers.has("content-disposition") ||
+      /(?:^|,)\s*(?:cookie|authorization|\*)\s*(?:,|$)/i.test(vary) ||
+      (!publicOfflineShell && (contentType === "text/html" || contentType === "application/xhtml+xml"))) return;
   const cache = await caches.open(cacheName);
   await cache.put(request, response.clone());
   if (cacheName === RUNTIME_CACHE) await trimCache(cacheName, MAX_RUNTIME_ENTRIES);
