@@ -57,3 +57,17 @@ test('PWA privacy regression is preserved in both local tests and CI', () => {
 
 // Separate npm audit remains mandatory. This guard does not waive known
 // picomatch ReDoS advisories or establish production security.
+
+test('CI dependency audit must fail closed on findings, outage, or timeout', () => {
+  const workflow = readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8');
+  const step = workflow.match(/^\s+- name: Dependency audit \(blocking\)\s*\n\s+run: ([^\n]+)/m);
+  assert.ok(step, 'A required dependency audit step must exist');
+  assert.equal(step[1].trim(), 'timeout 120s npm run audit');
+  assert.doesNotMatch(workflow, /continue-on-error\s*:\s*true/);
+  assert.doesNotMatch(workflow, /CI will not fail on this external outage/);
+});
+
+test('CI executes the dependency lockfile integrity regressions', () => {
+  const workflow = readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8');
+  assert.match(workflow, /- name: Dependency lock integrity\s*\n\s+run: npm run test:dependency-lock/);
+});
