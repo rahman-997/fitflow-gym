@@ -26,3 +26,16 @@ npm run typecheck
 npm run build
 npm audit --audit-level=high
 ```
+
+## Verified transitive advisory scope — 2026-11-18
+
+A fresh read of **this exact branch's** `package-lock.json` confirmed both affected `picomatch` copies are marked `dev: true`:
+
+| Lockfile package | Version | Parent | Lock metadata |
+| --- | --- | --- | --- |
+| `node_modules/picomatch` | 2.3.2 | `micromatch@4.0.8` (`^2.3.1`) | `dev: true` |
+| `node_modules/tinyglobby/node_modules/picomatch` | 4.0.7 | `tinyglobby@0.2.17` (`^4.0.4`) | `dev: true` |
+
+The direct dependencies remain Next.js 16.4.5, React 19.3.1, and React DOM 19.3.1. This lockfile classification suggests a **development/build-time dependency exposure**, but does **not** by itself prove the bundled application, its supply chain, or build pipeline is secure.
+
+Official advisory [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) / [OSV record](https://osv.dev/vulnerability/GHSA-fc5q-39xc-vjpf), last reviewed 2026-11-18: high-severity ReDoS in affected picomatch versions; no verified patched npm version was available in the checked advisory. **Do not apply blind npm overrides, install unaudited forks, hide audit findings, or weaken the blocking `npm audit --audit-level=high` check.** Reassess when upstream releases a verified fix, then run full installation, tests, build, and security audit. No Actions run, merge, deployment, purchases, or production data access performed.
