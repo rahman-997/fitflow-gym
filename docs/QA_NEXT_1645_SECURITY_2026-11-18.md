@@ -63,3 +63,12 @@ Official advisory [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-
 - `tests/sw-cache-privacy.test.mjs`: `88e8323409746ad385690982dec2104f6e9dcc5e`
 
 This test run uses **actual Node v22.16.0** and the built-in VM test harness, not simulated test callbacks. The full repository `npm ci`, Next.js build, browser acceptance, and live `npm audit` are still **not executed** on this stacked Draft branch. The independent picomatch ReDoS advisory is not resolved; no audit suppression, PR merge, deployment, or paid GitHub Actions run was performed.
+
+## 2026-11-18 continuation — no-cache and navigation response privacy
+
+- Continued the committed v5 Service Worker regression suite using the local exact Git blob snapshot (`public/sw.js` `655831b1`, tests `88e83234`).
+- Found that `Cache-Control: no-cache` responses were still written to offline caches, allowing replay without mandatory revalidation. Also, runtime navigation HTML could be cached even if it was specific to a session but had no explicit private/cookie headers.
+- Added **two new native Node regressions** before patching (test commit `4ccb2bd`). **Red: 6/8 pass, 2/8 fail.**
+- Fixed `cacheResponse` to reject `no-cache`, and changed `networkFirstNavigation` to never cache live navigation HTML. Offline fallback continues to use the public, credential-free pre-cache produced during `install` (fix commit `28d6dce`).
+- **Green: 8/8 tests passed using native Node.js v22.16.0**, `node --check public/sw.js` passed. Compared local Git blob SHAs to GitHub readbacks: `public/sw.js = 3f0ce0fd2cfffd0dea76a7667d6645b4e6cda160`, `tests/sw-cache-privacy.test.mjs = dfa3c15739bf730fe1e3c734726860c330182a98`.
+- This is only the Service Worker subsystem. **No full-repo npm installation, Next.js production build, browser E2E, real npm security audit or Actions run** for this stacked branch. The unresolved `picomatch` advisory remains a blocker. No publication/merge/paid usage.
