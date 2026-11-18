@@ -47,6 +47,9 @@ jobs:
       - name: Verify static export
         run: node scripts/verify-static-export.mjs
 
+      - name: Service Worker cache privacy regressions
+        run: npm run test:sw
+
       - name: Dependency audit
         shell: bash
         run: |
