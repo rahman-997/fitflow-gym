@@ -90,9 +90,15 @@ async function cacheFirstAsset(request) {
 }
 
 async function cacheResponse(cacheName, request, response) {
+  // A public-looking URL can still return user-specific content. Do not let
+  // Vary: Cookie/Authorization, HTML fallbacks, or downloads persist offline.
+  const vary = response.headers.get("vary") || "";
+  const contentType = (response.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
   if (!response.ok || response.type === "opaque" ||
       /(?:^|,)\s*(?:private|no-store|no-cache)\b/i.test(response.headers.get("cache-control") || "") ||
-      response.headers.has("set-cookie")) return;
+      response.headers.has("set-cookie") || response.headers.has("content-disposition") ||
+      /(?:^|,)\s*(?:cookie|authorization|\*)\s*(?:,|$)/i.test(vary) ||
+      contentType === "text/html" || contentType === "application/xhtml+xml") return;
   const cache = await caches.open(cacheName);
   await cache.put(request, response.clone());
   if (cacheName === RUNTIME_CACHE) await trimCache(cacheName, MAX_RUNTIME_ENTRIES);
