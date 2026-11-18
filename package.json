@@ -14,7 +14,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "audit": "npm audit --audit-level=high",
-    "test": "npm run lint && npm run typecheck && npm run build"
+    "test": "npm run test:dependency-lock && npm run lint && npm run typecheck && npm run build",
+    "test:dependency-lock": "node --test tests/dependency-lock-integrity.test.mjs"
   },
   "dependencies": {
     "next": "16.4.5",
