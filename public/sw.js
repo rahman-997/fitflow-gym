@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "fitflow-";
-const SHELL_CACHE = "fitflow-shell-v5";
-const RUNTIME_CACHE = "fitflow-runtime-v5";
+const SHELL_CACHE = "fitflow-shell-v6";
+const RUNTIME_CACHE = "fitflow-runtime-v6";
 const MAX_RUNTIME_ENTRIES = 80;
 const ACTIVE_CACHES = new Set([SHELL_CACHE, RUNTIME_CACHE]);
 const STATIC_ASSET = /\.(?:css|js|mjs|png|jpe?g|webp|svg|ico|woff2?|webmanifest)$/i;
