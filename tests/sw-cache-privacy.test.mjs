@@ -127,3 +127,29 @@ test('navigation responses are not persisted; offline uses the pre-validated pub
   });
   assert.deepEqual(stored, []);
 });
+
+
+test('Vary: Cookie or Authorization responses are not stored offline', async () => {
+  const {fire, stored} = fixture();
+  await fire('https://fitflow.example/profile.css', {
+    response: new Response('session-specific skin', {headers: {'vary': 'Accept-Encoding, Cookie'}}),
+  });
+  await fire('https://fitflow.example/settings.js', {
+    response: new Response('personalized settings', {headers: {'vary': 'Authorization'}}),
+  });
+  await fire('https://fitflow.example/fallback.svg', {
+    response: new Response('wildcard response', {headers: {'vary': '*'}}),
+  });
+  assert.deepEqual(stored, [], 'varying on cookies or authorization must not persist');
+});
+
+test('download attachments and HTML response under static-looking paths never enter caches', async () => {
+  const {fire, stored} = fixture();
+  await fire('https://fitflow.example/private.css', {
+    response: new Response('secret report', {headers: {'content-disposition': 'attachment; filename="report.csv"'}}),
+  });
+  await fire('https://fitflow.example/signed.js', {
+    response: new Response('<!doctype html>Profile', {headers: {'content-type': 'text/html'}}),
+  });
+  assert.deepEqual(stored, [], 'response metadata, not just pathname, must govern caching');
+});
