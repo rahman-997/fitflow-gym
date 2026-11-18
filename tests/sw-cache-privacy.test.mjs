@@ -108,3 +108,22 @@ test('activation retires the old pre-cache generation that bypassed privacy chec
   await activate();
   assert.deepEqual(deletedCaches,["fitflow-shell-v4","fitflow-runtime-v4"]);
 });
+
+test('Cache-Control no-cache responses must not be saved for offline reuse', async () => {
+  const { fire, stored } = fixture();
+  await fire('https://fitflow.example/live.js', {
+    response: new Response('session-bound response', {
+      headers: { 'cache-control': 'max-age=0, no-cache' },
+    }),
+  });
+  assert.deepEqual(stored, []);
+});
+
+test('navigation responses are not persisted; offline uses the pre-validated public shell', async () => {
+  const { fire, stored } = fixture();
+  await fire('https://fitflow.example/', {
+    mode: 'navigate',
+    response: new Response('potentially personalized dashboard'),
+  });
+  assert.deepEqual(stored, []);
+});
