@@ -156,3 +156,21 @@ test('static-export verifier fails closed on cross-cache runtime lookups', () =>
     /named runtime cache|origin-wide/i
   );
 });
+
+
+test('mobile navigation stays inside viewport when closed and remains keyboard-safe', () => {
+  const css = readFileSync(new URL('../app/globals.css', import.meta.url), 'utf8');
+  const mobile = css.match(/@media\s*\(max-width:\s*820px\)\s*\{([\s\S]*?)\n\}/)?.[1];
+  assert.ok(mobile, 'mobile navigation media query missing');
+  const closed = mobile.match(/\.primary-nav\s*\{[^}]*\}/)?.[0];
+  const open = mobile.match(/\.primary-nav\.is-open\s*\{[^}]*\}/)?.[0];
+  assert.ok(closed && open, 'mobile menu state styles must exist');
+  assert.match(closed, /clip-path:\s*inset\(0 0 0 100%\)/);
+  assert.match(closed, /visibility:\s*hidden/);
+  assert.match(closed, /pointer-events:\s*none/);
+  assert.doesNotMatch(closed, /translateX\(/,
+    'offscreen fixed navigation must not enlarge the document scroll width');
+  assert.match(open, /clip-path:\s*inset\(0\)/);
+  assert.match(open, /visibility:\s*visible/);
+  assert.match(open, /pointer-events:\s*auto/);
+});
