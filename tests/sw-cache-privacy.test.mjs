@@ -23,7 +23,7 @@ function fixture() {
     self: {location:{origin:'https://fitflow.example'},addEventListener(name,cb){handlers.set(name,cb);},skipWaiting(){},clients:{claim(){}}},
     caches: {
       open:async()=>cache, match:async()=>null,
-      keys:async()=>["fitflow-shell-v4", "fitflow-runtime-v4", "fitflow-shell-v5", "fitflow-runtime-v5", "other-owner"],
+      keys:async()=>["fitflow-shell-v4", "fitflow-runtime-v4", "fitflow-shell-v5", "fitflow-runtime-v5", "fitflow-shell-v6", "fitflow-runtime-v6", "other-owner"],
       delete:async name=>{deletedCaches.push(name);return true;},
     },
     fetch:async request=>{
@@ -106,7 +106,7 @@ test('install caches public shell using credential-free fetches and response che
 test('activation retires the old pre-cache generation that bypassed privacy checks',async()=>{
   const {activate,deletedCaches}=fixture();
   await activate();
-  assert.deepEqual(deletedCaches,["fitflow-shell-v4","fitflow-runtime-v4"]);
+  assert.deepEqual(deletedCaches,["fitflow-shell-v4","fitflow-runtime-v4","fitflow-shell-v5","fitflow-runtime-v5"]);
 });
 
 test('Cache-Control no-cache responses must not be saved for offline reuse', async () => {
@@ -126,4 +126,38 @@ test('navigation responses are not persisted; offline uses the pre-validated pub
     response: new Response('potentially personalized dashboard'),
   });
   assert.deepEqual(stored, []);
+});
+
+
+test('attachment responses on public asset paths cannot persist', async () => {
+  const {fire, stored}=fixture();
+  assert.equal(await fire('https://fitflow.example/assets/fitflow-hero.png', {
+    response: new Response('user export', {headers: {'content-disposition':'attachment; filename="export.csv"'}}),
+  }), true);
+  assert.deepEqual(stored, []);
+});
+
+test('HTML fallbacks under a public image URL cannot persist', async () => {
+  const {fire, stored}=fixture();
+  assert.equal(await fire('https://fitflow.example/assets/fitflow-hero.png', {
+    response: new Response('<html>personal dashboard</html>', {headers: {'content-type':'text/html; charset=utf-8'}}),
+  }), true);
+  assert.deepEqual(stored, []);
+});
+
+test('activation deletes both older v4 and v5 generations, preserving clean v6', async () => {
+  const {activate,deletedCaches}=fixture();
+  await activate();
+  for (const entry of ['fitflow-shell-v4','fitflow-runtime-v4','fitflow-shell-v5','fitflow-runtime-v5'])
+    assert.ok(deletedCaches.includes(entry), `old cache ${entry} must be removed`);
+  assert.ok(!deletedCaches.includes('fitflow-shell-v6'));
+  assert.ok(!deletedCaches.includes('fitflow-runtime-v6'));
+  assert.ok(!deletedCaches.includes('other-owner'));
+});
+
+test('credential-free install may cache public HTML shell with no private markers', async () => {
+  const {install,stored}=fixture();
+  await install({'https://fitflow.example/':new Response('<html>public fallback</html>', {
+    headers:{'content-type':'text/html; charset=utf-8'}})});
+  assert.ok(stored.includes('https://fitflow.example/'));
 });
