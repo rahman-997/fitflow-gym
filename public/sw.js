@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "fitflow-";
-const SHELL_CACHE = "fitflow-shell-v5";
-const RUNTIME_CACHE = "fitflow-runtime-v5";
+const SHELL_CACHE = "fitflow-shell-v6";
+const RUNTIME_CACHE = "fitflow-runtime-v6";
 const MAX_RUNTIME_ENTRIES = 80;
 const ACTIVE_CACHES = new Set([SHELL_CACHE, RUNTIME_CACHE]);
 const STATIC_ASSET = /\.(?:css|js|mjs|png|jpe?g|webp|svg|ico|woff2?|webmanifest)$/i;
@@ -101,10 +101,15 @@ async function cacheResponse(cacheName, request, response) {
   // Do not persist content keyed on cookies, auth headers, or wildcard Vary.
   const vary = (response.headers.get("vary") || "")
     .split(",").map((header) => header.trim().toLowerCase());
+  const contentType = (response.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+  const url = new URL(request.url);
+  const publicOfflineShell = cacheName === SHELL_CACHE && request.credentials === "omit" &&
+    url.origin === self.location.origin && url.pathname === "/" && !url.search;
   if (vary.some((header) => header === "*" || header === "cookie" || header === "authorization")) return;
   if (!response.ok || response.type === "opaque" ||
       /(?:^|,)\s*(?:private|no-store|no-cache)\b/i.test(response.headers.get("cache-control") || "") ||
-      response.headers.has("set-cookie")) return;
+      response.headers.has("set-cookie") || response.headers.has("content-disposition") ||
+      (!publicOfflineShell && (contentType === "text/html" || contentType === "application/xhtml+xml"))) return;
   const cache = await caches.open(cacheName);
   await cache.put(request, response.clone());
   if (cacheName === RUNTIME_CACHE) await trimCache(cacheName, MAX_RUNTIME_ENTRIES);
