@@ -77,3 +77,24 @@ test('CI executes the dependency lockfile integrity regressions', () => {
   const workflow = readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8');
   assert.match(workflow, /- name: Dependency lock integrity\s*\n\s+run: npm run test:dependency-lock/);
 });
+
+
+test('static export gate must validate scoped offline caches and reject origin-wide reads', () => {
+  const verifier = readFileSync(new URL('../scripts/verify-static-export.mjs', import.meta.url), 'utf8');
+  const worker = readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8');
+
+  assert.equal((worker.match(/shell\.match\("\/"\)/g) || []).length, 1,
+    'navigation may fall back to the known public shell exactly once');
+  assert.match(worker, /runtime\.match\(request\)/);
+  assert.doesNotMatch(worker, /\bcaches\.match\(/,
+    'workers may not read another app or old-generation cache');
+
+  assert.match(verifier, /sw\.includes\('shell\.match\("\/"\)'\)/,
+    'the static export verifier must recognize the new scoped shell lookup');
+  assert.match(verifier, /sw\.includes\('runtime\.match\(request\)'\)/,
+    'the static export verifier must require scoped static/runtime lookup');
+  assert.match(verifier, /sw\.includes\('caches\.match\('\)/,
+    'the verifier must reject origin-wide cache reads');
+  assert.doesNotMatch(verifier, /homepageFallbacks\s*=\s*sw\.match/,
+    'the historical global cache assertion must not return');
+});
