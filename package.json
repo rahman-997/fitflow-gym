@@ -16,7 +16,7 @@
     "audit": "npm audit --audit-level=high",
     "test": "npm run test:dependency-lock && npm run test:sw && npm run lint && npm run typecheck && npm run build",
     "test:dependency-lock": "node --test tests/dependency-lock-integrity.test.mjs",
-    "test:sw": "node --test tests/sw-cache-privacy.test.mjs"
+    "test:sw": "node --test tests/sw-cache-boundary.test.mjs tests/sw-cache-namespace.test.mjs tests/sw-cache-privacy.test.mjs"
   },
   "dependencies": {
     "next": "16.4.5",
