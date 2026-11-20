@@ -81,9 +81,17 @@ for (const marker of [
   }
 }
 
-const homepageFallbacks = sw.match(/caches\.match\("\/"\)/g) ?? [];
-if (homepageFallbacks.length !== 1) {
-  throw new Error("The app-shell fallback must be limited to navigation requests only");
+const scopedShellFallbacks = sw.match(/shell\.match\("\/"\)/g) ?? [];
+if (scopedShellFallbacks.length !== 1 || !sw.includes('shell.match("/")') ||
+    !sw.includes("const shell = await caches.open(SHELL_CACHE);")) {
+  throw new Error("Offline app-shell fallback must use the named FitFlow shell cache exactly once");
+}
+if (!sw.includes('runtime.match(request)') ||
+    !sw.includes("const runtime = await caches.open(RUNTIME_CACHE);")) {
+  throw new Error("Static and runtime offline cache reads must use the named runtime cache");
+}
+if (sw.includes('caches.match(')) {
+  throw new Error("Origin-wide cache lookups can replay unrelated/private cache entries");
 }
 
 if (sw.includes('filter((key) => key !== CACHE_NAME)')) {
