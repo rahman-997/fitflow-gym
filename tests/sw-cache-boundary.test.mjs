@@ -11,6 +11,7 @@ function createWorker() {
   const stored = [];
   const responses = new Map();
   const cache = {
+    async match() { return undefined; },
     async put(request) { stored.push(request.url); },
     async keys() { return []; },
     async delete() { return true; },
