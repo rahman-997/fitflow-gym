@@ -72,3 +72,27 @@ This test run uses **actual Node v22.16.0** and the built-in VM test harness, no
 - Fixed `cacheResponse` to reject `no-cache`, and changed `networkFirstNavigation` to never cache live navigation HTML. Offline fallback continues to use the public, credential-free pre-cache produced during `install` (fix commit `28d6dce`).
 - **Green: 8/8 tests passed using native Node.js v22.16.0**, `node --check public/sw.js` passed. Compared local Git blob SHAs to GitHub readbacks: `public/sw.js = 3f0ce0fd2cfffd0dea76a7667d6645b4e6cda160`, `tests/sw-cache-privacy.test.mjs = dfa3c15739bf730fe1e3c734726860c330182a98`.
 - This is only the Service Worker subsystem. **No full-repo npm installation, Next.js production build, browser E2E, real npm security audit or Actions run** for this stacked branch. The unresolved `picomatch` advisory remains a blocker. No publication/merge/paid usage.
+
+## Follow-up: response metadata privacy and public offline HTML (v3)
+
+The existing FitFlow v5 Service Worker still cached response bodies when a static-looking path returned `Vary: Cookie`/`Vary: Authorization`/`Vary: *`, a `Content-Disposition` attachment or a mismatched HTML fallback. The response pathname alone is not proof of public cacheability.
+
+**Test-first validation, real Node v22.16.0:** added two regression tests covering these response metadata cases (commit `02ca633`). Baseline with the new tests: **8 pass / 2 fail** as expected. Hardened `cacheResponse()` (commit `77a7588`); initial **10/10 pass**.
+
+**Important secondary regression:** because ordinary public home documents use `Content-Type: text/html`, a blanket HTML rejection would break the previously hardened offline install shell. Added another test (commit `bd8962e`) that failed as expected: **10 pass / 1 fail**. Adjusted the HTML guard (commit `c74f233`) to allow **only** the public home (`/`) fetched during the Service Worker install with `credentials: omit`, after checking `Cache-Control`, `Set-Cookie`, `Vary`, and `Content-Disposition`. Other HTML responses are not cached.
+
+**Final verified result:** native `node --test tests/sw-cache-privacy.test.mjs` **11/11 pass**, `node --check public/sw.js` passes. GitHub readback and tested local source match exactly by Git blob SHA:
+- `public/sw.js`: `4abdf1713a21f8a5a0648ca9189371a0af8b52dc`
+- `tests/sw-cache-privacy.test.mjs`: `40551c8772b5deaad9e2618d2be0e3434b05d5c8`
+
+**Scope:** Service Worker only. No full Next.js build, browser offline E2E, live dependency audit, CI run, merge or deployment was executed. The project remains **NO-GO** until all release gates and the unresolved `picomatch` advisory are handled.
+
+## Follow-up: v6 privacy-cache invalidation — native 12-test gate
+
+The latest response guards changed cache policy after older `fitflow-shell-v5` and `fitflow-runtime-v5` entries may already have persisted responses. Without cache namespace migration those entries could remain available offline even after the source-level fix.
+
+- Regression added **before fix**: a new native Node test requires activation to delete both v5 names, while retaining new v6 and unrelated cache namespaces (commit `13919f1`). **RED: 11/12 tests passed, 1 expected failure** on the old v5 implementation.
+- Fixed Service Worker cache names to `fitflow-shell-v6` and `fitflow-runtime-v6`, using the existing activation filter to remove prior v4 and v5 entries (commit `2b6f1a5`).
+- **GREEN:** actual Node v22.16.0 `node --test tests/sw-cache-privacy.test.mjs` reports **12/12 passed**, 0 failed; `node --check public/sw.js` passed.
+- Byte-level verification against GitHub after committing: `public/sw.js` Git blob `f2bbd70558a841bad92fdefa5e3dea6ee9562095`; `tests/sw-cache-privacy.test.mjs` blob `1a59a0b27c7bd6ab732a38d25b3582968980f4f1`. The local native Node source and tests have identical Git blob hashes.
+- All tests validate isolated Service Worker behavior only, **not a browser's real CacheStorage/WebView, a Next.js production build, npm audit, or a full repo E2E run**. Do not merge or deploy; known upstream dependency security blockers remain unresolved.
