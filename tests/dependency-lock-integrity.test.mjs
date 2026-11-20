@@ -45,7 +45,13 @@ test('preserve existing targeted minimatch override where configured', () => {
 });
 
 test('PWA privacy regression is preserved in both local tests and CI', () => {
-  assert.equal(pkg.scripts['test:sw'], 'node --test tests/sw-cache-privacy.test.mjs');
+  const requiredSwTests = [
+    'tests/sw-cache-boundary.test.mjs',
+    'tests/sw-cache-namespace.test.mjs',
+    'tests/sw-cache-privacy.test.mjs',
+  ];
+  assert.equal(pkg.scripts['test:sw'], 'node --test ' + requiredSwTests.join(' '),
+    'CI must execute all offline cache privacy and namespace regression files');
   assert.match(pkg.scripts.test, /npm run test:sw/);
   const workflow = readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8');
   assert.match(workflow, /Service Worker cache privacy regressions[\s\S]*?npm run test:sw/);
