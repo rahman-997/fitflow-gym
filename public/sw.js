@@ -73,7 +73,10 @@ async function networkFirstNavigation(request) {
     const response = await fetch(request);
     return response;
   } catch {
-    return (await caches.match(request)) || (await caches.match("/")) || Response.error();
+    // Restrict offline navigation to the validated shell cache. CacheStorage.match()
+// searches every cache in this origin, including unrelated/private caches.
+const shell = await caches.open(SHELL_CACHE);
+return (await shell.match("/")) || Response.error();
   }
 }
 
@@ -83,12 +86,15 @@ async function networkFirstRequest(request) {
     await cacheResponse(RUNTIME_CACHE, request, response);
     return response;
   } catch {
-    return (await caches.match(request)) || Response.error();
+    const runtime = await caches.open(RUNTIME_CACHE);
+return (await runtime.match(request)) || Response.error();
   }
 }
 
 async function cacheFirstAsset(request) {
-  const cached = await caches.match(request);
+  // Never use the origin-wide CacheStorage.match for immutable chunks.
+const runtime = await caches.open(RUNTIME_CACHE);
+const cached = await runtime.match(request);
   if (cached) return cached;
 
   const response = await fetch(request);
