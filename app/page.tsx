@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { buildKivyroTransfer } from "../lib/transfer";
+import { normalizeCompletedSessions } from "../lib/progress";
 
 const features = [
   {
@@ -186,6 +188,9 @@ export default function Home() {
   const [planReady, setPlanReady] = useState(false);
   const [completedSessions, setCompletedSessions] = useState<string[]>([]);
   const [trackerReady, setTrackerReady] = useState(false);
+  const [exportNotice, setExportNotice] = useState("");
+  const [storageNotice, setStorageNotice] = useState("");
+  const [progressDate, setProgressDate] = useState("");
   const [timerPresetIndex, setTimerPresetIndex] = useState(0);
   const [timerPhase, setTimerPhase] = useState<"work" | "rest" | "done">("work");
   const [timerRound, setTimerRound] = useState(1);
@@ -206,13 +211,9 @@ export default function Home() {
     const hydrateTracker = () => {
       try {
         const savedSessions = JSON.parse(localStorage.getItem("fitflow-week") ?? "[]");
-        if (Array.isArray(savedSessions)) setCompletedSessions(savedSessions.filter((item): item is string => typeof item === "string"));
+        setCompletedSessions(normalizeCompletedSessions(savedSessions, weeklySessions));
       } catch {
-        try {
-          localStorage.removeItem("fitflow-week");
-        } catch {
-          // Storage can be unavailable in hardened browser contexts.
-        }
+        setStorageNotice("Saved progress could not be read. Your stored data has been kept.");
       }
       setTrackerReady(true);
     };
@@ -255,15 +256,42 @@ export default function Home() {
     }
   }, []);
 
+  const exportToKivyro = () => {
+    let url: string | null = null;
+    try {
+      const transfer = buildKivyroTransfer({
+        plan: { goal: planGoal, days: planDays },
+        completed: completedSessions,
+        sessions: weeklySessions,
+        exportedAt: new Date(),
+        progressDate,
+      });
+      url = URL.createObjectURL(new Blob([JSON.stringify(transfer, null, 2)], { type: "application/json" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `fitflow-kivyro-${transfer.week}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setExportNotice(`Progress for the week of ${transfer.week} exported. Your original data remains on this device.`);
+    } catch {
+      setExportNotice("Could not export progress in this browser. Your saved data was not changed.");
+    } finally {
+      if (url) window.setTimeout(() => URL.revokeObjectURL(url!), 1000);
+    }
+  };
+
   const persistSessions = (sessions: string[]) => {
     try {
       localStorage.setItem("fitflow-week", JSON.stringify(sessions));
+      setStorageNotice("");
     } catch {
-      // The UI still works when storage is unavailable; persistence is best effort.
+      setStorageNotice("Progress is available in this tab, but could not be saved on this device. Export it before closing.");
     }
   };
 
   const toggleSession = (sessionId: string) => {
+    setExportNotice("");
     setCompletedSessions((current) => {
       const next = current.includes(sessionId)
         ? current.filter((id) => id !== sessionId)
@@ -274,11 +302,13 @@ export default function Home() {
   };
 
   const resetWeek = () => {
+    setExportNotice("");
     setCompletedSessions([]);
     try {
       localStorage.removeItem("fitflow-week");
+      setStorageNotice("");
     } catch {
-      // Ignore unavailable storage.
+      setStorageNotice("Progress was reset in this tab, but could not be cleared from device storage.");
     }
   };
 
@@ -579,7 +609,17 @@ export default function Home() {
               <div className="week-progress" aria-live="polite">
                 <div><span>{completedSessions.length} of {weeklySessions.length} complete</span><strong>{weeklyProgress}%</strong></div>
                 <div className="progress-track" aria-hidden="true"><span style={{ width: `${weeklyProgress}%` }} /></div>
-                {completedSessions.length > 0 && <button type="button" onClick={resetWeek}>Reset week</button>}
+                <label className="transfer-date" htmlFor="transfer-progress-date">
+                  Week to transfer
+                  <input id="transfer-progress-date" type="date" value={progressDate} aria-describedby="transfer-date-help" onChange={(event) => { setProgressDate(event.target.value); setExportNotice(""); }} />
+                </label>
+                <p id="transfer-date-help" className="transfer-help">Choose a day in the week these check-ins belong to. Saved check-ins do not include their original dates.</p>
+                <div className="week-progress-actions">
+                  <button className="export-transfer" type="button" onClick={exportToKivyro} disabled={!trackerReady || !planReady || !progressDate || completedSessions.length === 0} title={!progressDate ? "Choose the week for these check-ins." : completedSessions.length === 0 ? "Complete a session before exporting progress." : "Download progress for the selected week."}>Export for KIVYRO</button>
+                  {completedSessions.length > 0 && <button type="button" onClick={resetWeek}>Reset week</button>}
+                </div>
+                <p className="transfer-status" role="status" aria-live="polite">{exportNotice}</p>
+                <p className="transfer-status" role="status" aria-live="polite">{storageNotice}</p>
               </div>
             </div>
 
