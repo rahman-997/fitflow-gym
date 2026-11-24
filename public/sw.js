@@ -1,13 +1,29 @@
 const CACHE_PREFIX = "fitflow-";
-const SHELL_CACHE = "fitflow-shell-v4";
-const RUNTIME_CACHE = "fitflow-runtime-v4";
+const SHELL_CACHE = "fitflow-shell-v6";
+const RUNTIME_CACHE = "fitflow-runtime-v6";
 const MAX_RUNTIME_ENTRIES = 80;
 const ACTIVE_CACHES = new Set([SHELL_CACHE, RUNTIME_CACHE]);
 const STATIC_ASSET = /\.(?:css|js|mjs|png|jpe?g|webp|svg|ico|woff2?|webmanifest)$/i;
 const CORE_ASSETS = ["/", "/favicon.svg"];
+// Explicitly known public resources; never cache an arbitrary user-controlled
+// path merely because it ends with .svg, .png, .css, or .js.
+const PUBLIC_ASSETS = new Set([
+  "/favicon.svg", "/icon-192.png", "/icon-512.png",
+  "/manifest.webmanifest", "/og.png",
+  "/assets/fitflow-hero.png", "/assets/fitflow-programs-grid.png",
+]);
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(SHELL_CACHE).then((cache) => cache.addAll(CORE_ASSETS)));
+  // Never bypass the privacy filter when pre-caching the shell. Do not send
+  // session cookies even if the worker registers during an authenticated visit.
+  event.waitUntil(Promise.all(CORE_ASSETS.map(async (asset) => {
+    const request = new Request(new URL(asset, self.location.origin), {
+      credentials: "omit",
+      cache: "no-store",
+    });
+    const response = await fetch(request);
+    await cacheResponse(SHELL_CACHE, request, response);
+  })));
   self.skipWaiting();
 });
 
@@ -47,16 +63,20 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (STATIC_ASSET.test(url.pathname)) event.respondWith(networkFirstRequest(request));
+  if (PUBLIC_ASSETS.has(url.pathname) && STATIC_ASSET.test(url.pathname)) event.respondWith(networkFirstRequest(request));
 });
 
 async function networkFirstNavigation(request) {
   try {
+    // Navigation HTML can be session-specific. Offline fallback uses only the
+    // credential-free shell pre-cached during install.
     const response = await fetch(request);
-    await cacheResponse(RUNTIME_CACHE, request, response);
     return response;
   } catch {
-    return (await caches.match(request)) || (await caches.match("/")) || Response.error();
+    // Restrict offline navigation to the validated shell cache. CacheStorage.match()
+    // searches every cache in this origin, including unrelated/private caches.
+    const shell = await caches.open(SHELL_CACHE);
+    return (await shell.match("/")) || Response.error();
   }
 }
 
@@ -66,12 +86,15 @@ async function networkFirstRequest(request) {
     await cacheResponse(RUNTIME_CACHE, request, response);
     return response;
   } catch {
-    return (await caches.match(request)) || Response.error();
+    const runtime = await caches.open(RUNTIME_CACHE);
+    return (await runtime.match(request)) || Response.error();
   }
 }
 
 async function cacheFirstAsset(request) {
-  const cached = await caches.match(request);
+  // Never use the origin-wide CacheStorage.match for immutable chunks.
+  const runtime = await caches.open(RUNTIME_CACHE);
+  const cached = await runtime.match(request);
   if (cached) return cached;
 
   const response = await fetch(request);
@@ -80,9 +103,19 @@ async function cacheFirstAsset(request) {
 }
 
 async function cacheResponse(cacheName, request, response) {
+  // Cache Storage can replay a user-specific representation while offline.
+  // Do not persist content keyed on cookies, auth headers, or wildcard Vary.
+  const vary = (response.headers.get("vary") || "")
+    .split(",").map((header) => header.trim().toLowerCase());
+  const contentType = (response.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+  const url = new URL(request.url);
+  const publicOfflineShell = cacheName === SHELL_CACHE && request.credentials === "omit" &&
+    url.origin === self.location.origin && url.pathname === "/" && !url.search;
+  if (vary.some((header) => header === "*" || header === "cookie" || header === "authorization")) return;
   if (!response.ok || response.type === "opaque" ||
-      /(?:^|,)\s*(?:private|no-store)\b/i.test(response.headers.get("cache-control") || "") ||
-      response.headers.has("set-cookie")) return;
+      /(?:^|,)\s*(?:private|no-store|no-cache)\b/i.test(response.headers.get("cache-control") || "") ||
+      response.headers.has("set-cookie") || response.headers.has("content-disposition") ||
+      (!publicOfflineShell && (contentType === "text/html" || contentType === "application/xhtml+xml"))) return;
   const cache = await caches.open(cacheName);
   await cache.put(request, response.clone());
   if (cacheName === RUNTIME_CACHE) await trimCache(cacheName, MAX_RUNTIME_ENTRIES);
