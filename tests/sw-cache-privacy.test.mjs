@@ -159,5 +159,5 @@ test('credential-free install may cache public HTML shell with no private marker
   const {install,stored}=fixture();
   await install({'https://fitflow.example/':new Response('<html>public fallback</html>', {
     headers:{'content-type':'text/html; charset=utf-8'}})});
-  assert.ok(stored.includes('https://fitflow.example/'));
+  assert.ok(stored.some((url) => url === 'https://fitflow.example/'));
 });
