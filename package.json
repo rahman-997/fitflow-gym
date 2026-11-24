@@ -14,8 +14,9 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "audit": "npm audit --audit-level=high",
-    "test": "npm run test:sw && npm run lint && npm run typecheck && npm run build",
-    "test:sw": "node --test tests/sw-cache-boundary.test.mjs tests/sw-cache-namespace.test.mjs tests/sw-cache-privacy.test.mjs"
+    "test": "npm run test:sw && npm run test:unit && npm run lint && npm run typecheck && npm run build",
+    "test:sw": "node --test tests/sw-cache-boundary.test.mjs tests/sw-cache-namespace.test.mjs tests/sw-cache-privacy.test.mjs",
+    "test:unit": "node --experimental-strip-types --test tests/progress.test.mjs tests/transfer.test.mjs"
   },
   "dependencies": {
     "next": "16.4.6",
@@ -23,6 +24,7 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
     "@tailwindcss/postcss": "4.3.3",
     "@types/node": "22.20.1",
     "@types/react": "19.2.18",
@@ -38,6 +40,11 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/rahman-997/fitflow-gym.git"
+  },
+  "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "11.0.1"
+    }
   },
   "keywords": [
     "fitness",
