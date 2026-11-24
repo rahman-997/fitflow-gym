@@ -35,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Unit regression tests
+        run: npm run test:unit
+
       - name: Lint
         run: npm run lint
 
@@ -49,6 +52,25 @@ jobs:
 
       - name: Service Worker cache privacy regressions
         run: npm run test:sw
+
+      - name: Install pinned Chromium for progress regressions
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify stored progress and actual KIVYRO downloads
+        run: |
+          python3 -m http.server 4191 --bind 127.0.0.1 --directory out > /tmp/fitflow-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid" 2>/dev/null || true' EXIT
+          node scripts/verify-progress-browser.mjs
+
+      - name: Save progress browser results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: fitflow-progress-browser
+          path: artifacts/progress-browser/
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Dependency audit
         shell: bash
