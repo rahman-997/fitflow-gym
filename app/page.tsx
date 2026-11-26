@@ -39,7 +39,7 @@ function ProgramArt({ kind }: { kind: string }) {
   else if (kind === "mobility") shape = <path {...stroke} d="M30 130C90 60 130 60 200 120C270 180 310 180 370 110" />;
   else shape = <g {...stroke}><circle cx="200" cy="100" r="62" /><circle cx="200" cy="100" r="30" /><path d="M200 38V162M138 100H262" /></g>;
   return (
-    <svg className="program-art" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <svg className="program-art" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
       {shape}
     </svg>
   );
