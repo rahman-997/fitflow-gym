@@ -1,9 +1,49 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { buildKivyroTransfer } from "../lib/transfer";
 import { normalizeCompletedSessions } from "../lib/progress";
+
+
+function HeroArt() {
+  const days = ["M", "T", "W", "T", "F", "S", "S"];
+  const heights = [46, 70, 38, 82, 58, 28, 12];
+  return (
+    <div className="hero-art" aria-hidden="true">
+      <p className="hero-art-label">Quick HIIT · 20s work · 10s rest</p>
+      <svg className="hero-art-ring" viewBox="0 0 220 220" role="presentation">
+        <circle cx="110" cy="110" r="92" className="ring-track" />
+        <circle cx="110" cy="110" r="92" className="ring-fill" pathLength="100" strokeDasharray="64 100" transform="rotate(-90 110 110)" />
+        <text x="110" y="116" textAnchor="middle" className="ring-time">00:20</text>
+        <text x="110" y="144" textAnchor="middle" className="ring-phase">WORK</text>
+      </svg>
+      <div className="hero-art-pips">
+        {Array.from({ length: 8 }, (_, i) => <span className={i < 3 ? "is-done" : ""} key={i} />)}
+      </div>
+      <div className="hero-art-week">
+        {days.map((d, i) => (
+          <span key={i}><i style={{ height: heights[i] }} />{d}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProgramArt({ kind }: { kind: string }) {
+  const stroke = { fill: "none", stroke: "currentColor", strokeWidth: 10, strokeLinecap: "round", strokeLinejoin: "round" } as const;
+  let shape;
+  if (kind === "strength") shape = <path {...stroke} d="M50 100V140M90 80V160M310 80V160M350 100V140M90 120H310" />;
+  else if (kind === "cardio") shape = <path {...stroke} d="M30 120H120L150 60L190 180L220 100L250 120H370" />;
+  else if (kind === "yoga") shape = <g {...stroke}><circle cx="200" cy="60" r="18" /><path d="M120 170C150 170 175 140 200 100C225 140 250 170 280 170M200 100V150" /></g>;
+  else if (kind === "hiit") shape = <path {...stroke} d="M40 160V120M90 160V80M140 160V130M190 160V60M240 160V110M290 160V90M340 160V140" />;
+  else if (kind === "mobility") shape = <path {...stroke} d="M30 130C90 60 130 60 200 120C270 180 310 180 370 110" />;
+  else shape = <g {...stroke}><circle cx="200" cy="100" r="62" /><circle cx="200" cy="100" r="30" /><path d="M200 38V162M138 100H262" /></g>;
+  return (
+    <svg className="program-art" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+      {shape}
+    </svg>
+  );
+}
 
 const features = [
   {
@@ -403,13 +443,7 @@ export default function Home() {
 
             <div className="hero-visual" aria-label="FitFlow training experience">
               <div className="hero-image-wrap">
-                <Image
-                  src="/assets/fitflow-hero.png"
-                  alt="Athletes completing a guided strength workout in a modern gym"
-                  width={1672}
-                  height={941}
-                  priority
-                />
+                <HeroArt />
                 <div className="hero-image-shade" aria-hidden="true" />
               </div>
               <div className="metric-card metric-card--top">
@@ -511,12 +545,7 @@ export default function Home() {
               {filteredPrograms.map((program, index) => (
                 <article className="program-card" key={program.name}>
                   <div className={`program-image ${program.imageClass}`}>
-                    <Image
-                      src="/assets/fitflow-programs-grid.png"
-                      alt={`${program.name} fitness session`}
-                      width={1536}
-                      height={1024}
-                    />
+                    <ProgramArt kind={program.category === "mind-body" ? "yoga" : program.imageClass.replace("program-image--", "")} />
                     <span className="program-index" aria-hidden="true">0{index + 1}</span>
                   </div>
                   <div className="program-content">
