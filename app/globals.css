@@ -306,7 +306,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--lime); outline-
 .program-card { overflow: hidden; border: 1px solid rgba(12, 23, 22, 0.12); border-radius: var(--radius-md); background: #f8f7f2; box-shadow: 0 10px 38px rgba(27, 41, 37, 0.04); transition: transform 260ms var(--ease), box-shadow 260ms ease; }
 .program-card:hover { box-shadow: 0 24px 60px rgba(27, 41, 37, 0.12); transform: translateY(-7px); }
 .program-image { position: relative; height: 235px; overflow: hidden; background: #20312e; }
-.program-art { position: absolute; inset: 0; width: 100%; height: 100%; padding: 28px 18%; color: var(--lime); opacity: 0.9; transition: transform 500ms var(--ease); }
+.program-art { position: absolute; inset: 0; width: 100%; height: 100%; padding: 22px 8%; color: var(--lime); opacity: 0.9; transition: transform 500ms var(--ease); }
 .program-card:hover .program-art { transform: scale(1.04); }
 .program-image--strength { background: linear-gradient(135deg, #18332e, #0d1f1c); }
 .program-image--cardio { background: linear-gradient(135deg, #1a3a34, #0b211d); }
