@@ -18,8 +18,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/og.png",
-        width: 1731,
-        height: 909,
+        width: 1200,
+        height: 630,
         alt: "FitFlow local-first fitness PWA product preview",
       },
     ],
