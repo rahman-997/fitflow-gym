@@ -171,7 +171,19 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--lime); outline-
 .hero-visual { position: relative; align-self: end; min-height: 606px; }
 .hero-image-wrap { position: absolute; inset: 10px 0 0 26px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 260px 260px 18px 18px; background: #19312c; box-shadow: var(--shadow); }
 .hero-image-wrap::before { position: absolute; z-index: 2; top: 18px; right: 18px; bottom: 18px; left: 18px; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: inherit; content: ""; pointer-events: none; }
-.hero-image-wrap img { width: 100%; height: 100%; object-fit: cover; object-position: 60% center; filter: saturate(0.92) contrast(1.04); }
+.hero-art { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 56px 40px 40px; background: radial-gradient(circle at 50% 28%, #24473f, #112823 62%, #0a1b18); color: var(--white); }
+.hero-art-label { margin: 0; color: rgba(255, 255, 255, 0.62); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.hero-art-ring { width: min(62%, 250px); height: auto; }
+.hero-art-ring .ring-track { fill: none; stroke: rgba(255, 255, 255, 0.12); stroke-width: 12; }
+.hero-art-ring .ring-fill { fill: none; stroke: var(--lime); stroke-width: 12; stroke-linecap: round; }
+.hero-art-ring .ring-time { fill: var(--white); font-family: inherit; font-size: 46px; font-weight: 700; }
+.hero-art-ring .ring-phase { fill: var(--lime); font-family: inherit; font-size: 14px; font-weight: 800; letter-spacing: 0.22em; }
+.hero-art-pips { display: flex; gap: 8px; }
+.hero-art-pips span { width: 14px; height: 14px; border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; }
+.hero-art-pips span.is-done { border-color: var(--lime); background: var(--lime); }
+.hero-art-week { display: flex; align-items: flex-end; gap: 12px; height: 110px; margin-top: 6px; }
+.hero-art-week span { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; height: 100%; color: rgba(255, 255, 255, 0.55); font-size: 0.7rem; font-weight: 700; }
+.hero-art-week i { display: block; width: 18px; border-radius: 9px; background: var(--lime); opacity: 0.85; }
 .hero-image-shade { position: absolute; inset: 0; background: linear-gradient(to top, rgba(5, 17, 15, 0.72), transparent 43%), linear-gradient(90deg, rgba(5, 17, 15, 0.18), transparent 42%); }
 
 .metric-card { position: absolute; z-index: 5; display: flex; align-items: center; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; background: rgba(6, 20, 18, 0.76); color: rgba(255, 255, 255, 0.65); box-shadow: 0 18px 45px rgba(3, 12, 10, 0.28); backdrop-filter: blur(16px); }
@@ -294,14 +306,14 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--lime); outline-
 .program-card { overflow: hidden; border: 1px solid rgba(12, 23, 22, 0.12); border-radius: var(--radius-md); background: #f8f7f2; box-shadow: 0 10px 38px rgba(27, 41, 37, 0.04); transition: transform 260ms var(--ease), box-shadow 260ms ease; }
 .program-card:hover { box-shadow: 0 24px 60px rgba(27, 41, 37, 0.12); transform: translateY(-7px); }
 .program-image { position: relative; height: 235px; overflow: hidden; background: #20312e; }
-.program-image img { position: absolute; max-width: none; width: 300%; height: 200%; object-fit: cover; filter: saturate(0.88) contrast(1.05); transition: transform 500ms var(--ease), filter 500ms ease; }
-.program-card:hover .program-image img { filter: saturate(1.04) contrast(1.02); transform: scale(1.025); }
-.program-image--strength img { top: 0; left: 0; }
-.program-image--cardio img { top: 0; left: -100%; }
-.program-image--yoga img { top: 0; left: -200%; }
-.program-image--hiit img { top: -100%; left: 0; }
-.program-image--mobility img { top: -100%; left: -100%; }
-.program-image--fullbody img { top: -100%; left: -200%; }
+.program-art { position: absolute; inset: 0; width: 100%; height: 100%; padding: 28px 18%; color: var(--lime); opacity: 0.9; transition: transform 500ms var(--ease); }
+.program-card:hover .program-art { transform: scale(1.04); }
+.program-image--strength { background: linear-gradient(135deg, #18332e, #0d1f1c); }
+.program-image--cardio { background: linear-gradient(135deg, #1a3a34, #0b211d); }
+.program-image--yoga { background: linear-gradient(135deg, #223a33, #12261f); }
+.program-image--hiit { background: linear-gradient(135deg, #143028, #0a1b18); }
+.program-image--mobility { background: linear-gradient(135deg, #1d3732, #0e2420); }
+.program-image--fullbody { background: linear-gradient(135deg, #193630, #0c2019); }
 .program-image::after { position: absolute; inset: 0; background: linear-gradient(to top, rgba(4, 15, 13, 0.56), transparent 56%); content: ""; pointer-events: none; }
 .program-index { position: absolute; z-index: 2; right: 16px; bottom: 14px; display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 50%; background: rgba(7, 19, 18, 0.32); color: var(--white); font-family: Georgia, "Times New Roman", serif; font-size: 0.66rem; font-style: italic; backdrop-filter: blur(7px); }
 .program-content { padding: 26px 27px 27px; }
@@ -540,6 +552,10 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--lime); outline-
 }
 
 @media (max-width: 560px) {
+  .hero-art { padding: 112px 20px 88px; gap: 14px; }
+  .hero-art-label { display: none; }
+  .hero-art-ring { width: min(58%, 200px); }
+  .hero-art-week { height: 78px; gap: 9px; margin-top: 0; }
   .container { width: min(calc(100% - 28px), var(--container)); }
   .site-header { height: 70px; }
   .hero { padding-top: 42px; }
