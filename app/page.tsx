@@ -545,7 +545,7 @@ export default function Home() {
               {filteredPrograms.map((program, index) => (
                 <article className="program-card" key={program.name}>
                   <div className={`program-image ${program.imageClass}`}>
-                    <ProgramArt kind={program.category === "mind-body" ? "yoga" : program.imageClass.replace("program-image--", "")} />
+                    <ProgramArt kind={program.imageClass.replace("program-image--", "")} />
                     <span className="program-index" aria-hidden="true">0{index + 1}</span>
                   </div>
                   <div className="program-content">
