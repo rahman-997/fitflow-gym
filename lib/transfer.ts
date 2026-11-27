@@ -22,6 +22,9 @@ function selectedMondayKey(value: string): string {
     throw new TypeError("Choose a valid progress date.");
   }
   date.setUTCDate(date.getUTCDate() - ((date.getUTCDay() + 6) % 7));
+  // Match KIVYRO's supported Monday-year range, including cross-year weeks.
+  const year = date.getUTCFullYear();
+  if (year < 2000 || year > 2100) throw new TypeError("Choose a valid progress date (week must start in 2000–2100).");
   return date.toISOString().slice(0, 10);
 }
 

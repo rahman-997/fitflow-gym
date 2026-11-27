@@ -16,7 +16,7 @@
     "audit": "npm audit --audit-level=high",
     "test": "npm run test:sw && npm run test:unit && npm run lint && npm run typecheck && npm run build",
     "test:sw": "node --test tests/sw-cache-boundary.test.mjs tests/sw-cache-namespace.test.mjs tests/sw-cache-privacy.test.mjs",
-    "test:unit": "node --experimental-strip-types --test tests/progress.test.mjs tests/transfer.test.mjs tests/raster-assets.test.mjs"
+    "test:unit": "node --experimental-strip-types --test tests/progress.test.mjs tests/transfer.test.mjs tests/transfer-week-range.test.mjs tests/raster-assets.test.mjs"
   },
   "dependencies": {
     "next": "16.4.6",
